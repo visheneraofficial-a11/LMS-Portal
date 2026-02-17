@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Django
+*.sqlite3
+db.sqlite3
+local_settings.py
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Node / Frontend
+node_modules/
+student-dashboard/node_modules/
+teacher-dashboard/node_modules/
+student-dashboard/dist/
+teacher-dashboard/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/*.log
+*.log
+
+# Runtime
+gunicorn.pid
+run/
+*.pid
+*.sock
+
+# Media uploads
+media/
+
+# Backup
+backup/
+
+# Environment
+.env
+.env.*

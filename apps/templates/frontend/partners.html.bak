@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+
+<!-- ========== NAVBAR ========== -->
+<nav class="navbar" id="navbar">
+  <div class="container">
+    <a href="/" class="nav-brand">
+      <div class="logo-icon">E</div>
+      <span>ENF Online Class</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/">Home</a></li>
+      <li class="nav-dropdown">
+        <a href="#">About <i class="fas fa-chevron-down" style="font-size:.625rem;margin-left:4px"></i></a>
+        <div class="dropdown-menu">
+          <a href="/about/"><i class="fas fa-building"></i> About ENF</a>
+          <a href="/founder/"><i class="fas fa-user-tie"></i> Founder &amp; Trustees</a>
+          <a href="/management/"><i class="fas fa-users-cog"></i> Management Team</a>
+        </div>
+      </li>
+      <li><a href="/programs/">Programs</a></li>
+      <li><a href="/partners/" class="active">Partners</a></li>
+      <li><a href="/scholarships/">Scholarships</a></li>
+      <li><a href="/news/">News</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="javascript:void(0)" class="btn btn-primary btn-sm" onclick="openLoginModal()"><i class="fas fa-sign-in-alt"></i> Login</a>
+    </div>
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
+  </div>
+</nav>
+
+<!-- ========== LOGIN MODAL ========== -->
+<div class="login-modal-overlay" id="loginModal">
+  <div class="login-modal" style="position:relative">
+    <button class="login-modal-close" onclick="closeLoginModal()"><i class="fas fa-times"></i></button>
+    <div class="login-modal-header">
+      <h2>Welcome Back</h2>
+      <p>Select your role to continue</p>
+    </div>
+    <div class="login-role-grid">
+      <a href="/login/?role=student" class="login-role-card">
+        <div class="role-icon student"><i class="fas fa-user-graduate"></i></div>
+        <h3>Student</h3>
+        <span>Access your classes</span>
+      </a>
+      <a href="/login/?role=teacher" class="login-role-card">
+        <div class="role-icon teacher"><i class="fas fa-chalkboard-teacher"></i></div>
+        <h3>Teacher</h3>
+        <span>Manage your courses</span>
+      </a>
+      <a href="/login/?role=admin" class="login-role-card">
+        <div class="role-icon admin"><i class="fas fa-user-shield"></i></div>
+        <h3>Admin</h3>
+        <span>System management</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE HEADER ========== -->
+<section class="page-header">
+  <div class="container">
+    <h1>Our Partners</h1>
+    <div class="breadcrumb">
+      <a href="/">Home</a> <i class="fas fa-chevron-right" style="font-size:.625rem"></i> <span>Partners</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========== PARTNERS SECTION ========== -->
+<section class="programs-section" data-aos="fade-up">
+  <div class="container">
+
+    <!-- Section Header -->
+    <div class="section-header" data-aos="fade-up" style="text-align:center;margin-bottom:48px">
+      <h2 style="font-size:2rem;font-weight:800;color:var(--gray-900);margin-bottom:12px">Organizations That Trust Us</h2>
+      <p style="color:var(--gray-500);font-size:1.125rem;max-width:640px;margin:0 auto">We are proud to partner with leading organizations committed to transforming education.</p>
+    </div>
+
+    <!-- Partners Grid (stacked vertically) -->
+    <div class="partners-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:32px">
+
+      <!-- 1. Tata Motors -->
+      <div class="content-box" data-aos="fade-up" style="display:flex;gap:24px;align-items:flex-start">
+        <div class="partner-logo" style="background:#1a365d;color:white;min-width:72px;width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;flex-shrink:0">TM</div>
+        <div>
+          <h3 style="font-size:1.25rem;font-weight:700;color:var(--gray-900);margin-bottom:8px">Tata Motors</h3>
+          <p style="color:var(--gray-500);line-height:1.8">We are proud to partner with Tata Motors, a renowned company that is committed to making a positive impact in the communities it serves. Their support has been instrumental in enabling us to reach more underprivileged students and provide them with quality education. Tata Motors' partnership has helped us to create a lasting impact in the lives of countless students and their families.</p>
+        </div>
+      </div>
+
+      <!-- 2. Tata AIG -->
+      <div class="content-box" data-aos="fade-up" style="display:flex;gap:24px;align-items:flex-start">
+        <div class="partner-logo" style="background:#7c2d12;color:white;min-width:72px;width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;flex-shrink:0">TA</div>
+        <div>
+          <h3 style="font-size:1.25rem;font-weight:700;color:var(--gray-900);margin-bottom:8px">Tata AIG</h3>
+          <p style="color:var(--gray-500);line-height:1.8">Ex Navodayan Foundation is a partner with TATA AIG since the year 2019. Tata AIG General Insurance Company Limited is an Indian general insurance company and a joint venture between the Tata Group and American International Group (AIG). Tata AIG's support helped us create a system to help underprivileged students.</p>
+        </div>
+      </div>
+
+      <!-- 3. Navodaya Vidyalaya Samiti -->
+      <div class="content-box" data-aos="fade-up" style="display:flex;gap:24px;align-items:flex-start">
+        <div class="partner-logo" style="background:#065f46;color:white;min-width:72px;width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;flex-shrink:0">NV</div>
+        <div>
+          <h3 style="font-size:1.25rem;font-weight:700;color:var(--gray-900);margin-bottom:8px">Navodaya Vidyalaya Samiti</h3>
+          <p style="color:var(--gray-500);line-height:1.8">We are honored to partner with Navodaya Vidyalaya Samiti, an organization dedicated to providing education to rural students. Together, we are helping deserving students overcome financial and other barriers to achieve their dreams. NVS's support has been crucial in enabling us to expand our reach and provide quality education to more students.</p>
+        </div>
+      </div>
+
+      <!-- 4. Ministry of Science and Technology -->
+      <div class="content-box" data-aos="fade-up" style="display:flex;gap:24px;align-items:flex-start">
+        <div class="partner-logo" style="background:#7c3aed;color:white;min-width:72px;width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;flex-shrink:0">MS</div>
+        <div>
+          <h3 style="font-size:1.25rem;font-weight:700;color:var(--gray-900);margin-bottom:8px">Ministry of Science and Technology</h3>
+          <p style="color:var(--gray-500);line-height:1.8">We are proud to partner with the Department of Science and Technology, Government of India, an organization committed to promoting science and technology in the country. Our partnership enables us to provide cutting-edge resources and technology to our students, preparing them for success in competitive exams.</p>
+        </div>
+      </div>
+
+      <!-- 5. Social Welfare Society, UP -->
+      <div class="content-box" data-aos="fade-up" style="display:flex;gap:24px;align-items:flex-start">
+        <div class="partner-logo" style="background:#b91c1c;color:white;min-width:72px;width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;flex-shrink:0">SW</div>
+        <div>
+          <h3 style="font-size:1.25rem;font-weight:700;color:var(--gray-900);margin-bottom:8px">Social Welfare Society, UP</h3>
+          <p style="color:var(--gray-500);line-height:1.8">ENF is honored to partner with the Social Welfare Society of Uttar Pradesh, a non-profit organization that shares our commitment to improving education and empowering underprivileged students. Their support has been crucial in enabling us to expand our reach and provide quality education.</p>
+        </div>
+      </div>
+
+      <!-- 6. Tata Power Delhi Distribution Limited -->
+      <div class="content-box" data-aos="fade-up" style="display:flex;gap:24px;align-items:flex-start">
+        <div class="partner-logo" style="background:#0369a1;color:white;min-width:72px;width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;flex-shrink:0">TP</div>
+        <div>
+          <h3 style="font-size:1.25rem;font-weight:700;color:var(--gray-900);margin-bottom:8px">Tata Power Delhi Distribution Limited</h3>
+          <p style="color:var(--gray-500);line-height:1.8">TPDDL is one of the partners of our foundation. It is a joint venture between Tata Power and the Government of Delhi. TPDDL has been supporting us in our mission to provide quality education to underprivileged students. Their contribution in the form of financial support and resources has enabled us to expand our reach.</p>
+        </div>
+      </div>
+
+      <!-- 7. Delhi Board of School Education -->
+      <div class="content-box" data-aos="fade-up" style="display:flex;gap:24px;align-items:flex-start">
+        <div class="partner-logo" style="background:#a16207;color:white;min-width:72px;width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;flex-shrink:0">DB</div>
+        <div>
+          <h3 style="font-size:1.25rem;font-weight:700;color:var(--gray-900);margin-bottom:8px">Delhi Board of School Education</h3>
+          <p style="color:var(--gray-500);line-height:1.8">We are proud to partner with The Delhi Board of School Education (DBSE), a state-level board of education of Delhi established in 2021. Currently, there are 31 schools in Delhi called ASoSE (Dr. BR Ambedkar School of Specialized Excellence). DBSE aims to affiliate schools for holistic development through a new-age curriculum, assessment and teacher training model.</p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- ========== CTA SECTION ========== -->
+<section class="cta-section" data-aos="fade-up">
+  <div class="container">
+    <h2>Become a Partner</h2>
+    <p style="color:rgba(255,255,255,.85);max-width:560px;margin:0 auto 24px">Join hands with us to transform education and empower underprivileged students across India.</p>
+    <div class="cta-buttons">
+      <a href="#contact" class="btn btn-primary btn-lg">Partner With Us</a>
+      <a href="/programs/" class="btn btn-outline-white btn-lg">Explore Programs</a>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <!-- Col 1: Brand -->
+      <div class="footer-col">
+        <div class="footer-brand">
+          <div class="logo-icon">E</div>
+          <span>ENF Online Class</span>
+        </div>
+        <p>Ex Navodayan Foundation (ENF) is a premier not-for-profit organization dedicated to empowering Navodaya alumni and students through quality education, mentorship, and technology-enabled learning programs across India.</p>
+        <div class="footer-social">
+          <a href="https://youtube.com" target="_blank" rel="noopener" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+          <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://twitter.com" target="_blank" rel="noopener" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          <a href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+
+      <!-- Col 2: Quick Links -->
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="/about/">About Us</a></li>
+          <li><a href="/programs/">Programs</a></li>
+          <li><a href="/partners/">Partners</a></li>
+          <li><a href="/scholarships/">Scholarships</a></li>
+          <li><a href="/news/">News</a></li>
+          <li><a href="/gallery/">Gallery</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 3: Programs -->
+      <div class="footer-col">
+        <h4>Programs</h4>
+        <ul class="footer-links">
+          <li><a href="/programs/">CoE</a></li>
+          <li><a href="/programs/">ENABLE</a></li>
+          <li><a href="/programs/">TPDDL</a></li>
+          <li><a href="/programs/">ASOSE</a></li>
+          <li><a href="/programs/">SEED</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 4: Get in Touch -->
+      <div class="footer-col">
+        <h4>Get in Touch</h4>
+        <div class="footer-contact">
+          <div class="footer-contact-item">
+            <i class="fas fa-location-dot"></i>
+            <span>B-36/43-46M, Brahmanand Colony, Durgakund, Varanasi, UP (221005)</span>
+          </div>
+          <div class="footer-contact-item">
+            <i class="fas fa-phone"></i>
+            <span>+91-76070 02100</span>
+          </div>
+          <div class="footer-contact-item">
+            <i class="fas fa-envelope"></i>
+            <span>exnavodayanfoundation1@gmail.com</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Bottom -->
+    <div class="footer-bottom">
+      <p>&copy; 2026 Ex Navodayan Foundation. All rights reserved.</p>
+      <p>Design by <a href="https://erpdsoft.com" target="_blank" rel="noopener">ERPDSOFT</a></p>
+    </div>
+  </div>
+</footer>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Navbar scroll effect
+  window.addEventListener('scroll', function () {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+  });
+
+  // Login Modal
+  function openLoginModal() {
+    document.getElementById('loginModal').classList.add('show');
+  }
+  function closeLoginModal() {
+    document.getElementById('loginModal').classList.remove('show');
+  }
+  document.getElementById('loginModal').addEventListener('click', function (e) {
+    if (e.target === this) closeLoginModal();
+  });
+
+  // Mobile menu toggle
+  function toggleMobileMenu() {
+    var links = document.getElementById('navLinks');
+    links.classList.toggle('show');
+  }
+
+  // Intersection Observer for scroll animations
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('[data-aos]').forEach(function (el) {
+    observer.observe(el);
+  });
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+    anchor.addEventListener('click', function (e) {
+      var targetId = this.getAttribute('href');
+      if (targetId === '#') return;
+      e.preventDefault();
+      var target = document.querySelector(targetId);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+{% endblock %}

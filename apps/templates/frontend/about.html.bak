@@ -1,0 +1,383 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+
+<!-- ========== NAVBAR ========== -->
+<nav class="navbar" id="navbar">
+  <div class="container">
+    <a href="/" class="nav-brand">
+      <div class="logo-icon">E</div>
+      <span>ENF Online Class</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/">Home</a></li>
+      <li class="nav-dropdown">
+        <a href="#" class="active">About <i class="fas fa-chevron-down" style="font-size:.625rem;margin-left:4px"></i></a>
+        <div class="dropdown-menu">
+          <a href="/about/" class="active"><i class="fas fa-building"></i> About ENF</a>
+          <a href="/founder/"><i class="fas fa-user-tie"></i> Founder &amp; Trustees</a>
+          <a href="/management/"><i class="fas fa-users-cog"></i> Management Team</a>
+        </div>
+      </li>
+      <li><a href="/programs/">Programs</a></li>
+      <li><a href="/partners/">Partners</a></li>
+      <li><a href="/scholarships/">Scholarships</a></li>
+      <li><a href="/news/">News</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="javascript:void(0)" class="btn btn-primary btn-sm" onclick="openLoginModal()"><i class="fas fa-sign-in-alt"></i> Login</a>
+    </div>
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
+  </div>
+</nav>
+
+<!-- ========== LOGIN MODAL ========== -->
+<div class="login-modal-overlay" id="loginModal">
+  <div class="login-modal" style="position:relative">
+    <button class="login-modal-close" onclick="closeLoginModal()"><i class="fas fa-times"></i></button>
+    <div class="login-modal-header">
+      <h2>Welcome Back</h2>
+      <p>Select your role to continue</p>
+    </div>
+    <div class="login-role-grid">
+      <a href="/login/?role=student" class="login-role-card">
+        <div class="role-icon student"><i class="fas fa-user-graduate"></i></div>
+        <h3>Student</h3>
+        <span>Access your classes</span>
+      </a>
+      <a href="/login/?role=teacher" class="login-role-card">
+        <div class="role-icon teacher"><i class="fas fa-chalkboard-teacher"></i></div>
+        <h3>Teacher</h3>
+        <span>Manage your courses</span>
+      </a>
+      <a href="/login/?role=admin" class="login-role-card">
+        <div class="role-icon admin"><i class="fas fa-user-shield"></i></div>
+        <h3>Admin</h3>
+        <span>System management</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE HEADER ========== -->
+<section class="page-header">
+  <div class="container">
+    <h1>About Us</h1>
+    <div class="breadcrumb">
+      <a href="/">Home</a> <i class="fas fa-chevron-right" style="font-size:.625rem"></i> <span>About Us</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========== ABOUT SECTION ========== -->
+<section class="programs-section" data-aos="fade-up">
+  <div class="container">
+    <div class="about-content" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center">
+
+      <!-- Left: About Text -->
+      <div class="about-text" data-aos="fade-right">
+        <h3 style="font-size:1.75rem;font-weight:800;color:var(--gray-900);margin-bottom:16px">Ex Navodayan Foundation (ENF)</h3>
+        <p style="color:var(--gray-500);line-height:1.8;margin-bottom:16px">Ex Navodayan Foundation (ENF) was established by JNV Alumni in 2016 and registered as a Trust under the Indian Trust Act. ENF is dedicated to support senior secondary students from underprivileged and marginalized backgrounds and help deserving students to qualify for premier institutes of engineering and medicine.</p>
+        <p style="color:var(--gray-500);line-height:1.8">Since its inception, ENF has grown from supporting 50 students to reaching over 15,000 students across 380+ partner schools through programs like CoE, ENABLE, TPDDL, ASOSE, and SEED.</p>
+      </div>
+
+      <!-- Right: About Visual -->
+      <div class="about-visual" data-aos="fade-left" style="display:flex;align-items:center;justify-content:center">
+        <div style="background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:24px;width:100%;height:320px;display:flex;align-items:center;justify-content:center">
+          <i class="fas fa-graduation-cap" style="font-size:8rem;color:rgba(255,255,255,.25)"></i>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ========== MISSION & VISION ========== -->
+<section class="programs-section" data-aos="fade-up" style="padding-top:0">
+  <div class="container">
+    <div class="mission-vision-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+
+      <!-- Mission Card -->
+      <div class="content-box" data-aos="fade-up">
+        <h3 style="font-size:1.25rem;font-weight:700;color:var(--gray-900);margin-bottom:12px">
+          <i class="fas fa-bullseye" style="color:var(--primary);margin-right:8px"></i> Our Mission
+        </h3>
+        <p style="color:var(--gray-500);line-height:1.8">Empowering underprivileged students, with quality education and resources, to help them achieve their academic goals.</p>
+      </div>
+
+      <!-- Vision Card -->
+      <div class="content-box" data-aos="fade-up">
+        <h3 style="font-size:1.25rem;font-weight:700;color:var(--gray-900);margin-bottom:12px">
+          <i class="fas fa-eye" style="color:var(--accent);margin-right:8px"></i> Our Vision
+        </h3>
+        <p style="color:var(--gray-500);line-height:1.8">To provide help and guidance to as many eligible but impoverished learners as possible; enabling them to qualify the JEE/NEET exams, and securing admission to esteemed Engineering and Medical institutes like IIT, AIIMS, etc.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ========== STATS SECTION ========== -->
+<section class="section-gradient" data-aos="fade-up" style="padding:64px 0;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;text-align:center">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:32px">
+
+      <div class="stat-item" data-aos="zoom-in">
+        <h3 style="font-size:2.5rem;font-weight:800;margin-bottom:8px" data-count="15000" data-suffix="+">0</h3>
+        <p style="opacity:.85;font-size:1rem">Students Guided</p>
+      </div>
+
+      <div class="stat-item" data-aos="zoom-in" data-aos-delay="100">
+        <h3 style="font-size:2.5rem;font-weight:800;margin-bottom:8px" data-count="380" data-suffix="+">0</h3>
+        <p style="opacity:.85;font-size:1rem">Partner Schools</p>
+      </div>
+
+      <div class="stat-item" data-aos="zoom-in" data-aos-delay="200">
+        <h3 style="font-size:2.5rem;font-weight:800;margin-bottom:8px" data-count="6" data-suffix="+">0</h3>
+        <p style="opacity:.85;font-size:1rem">Active Programs</p>
+      </div>
+
+      <div class="stat-item" data-aos="zoom-in" data-aos-delay="300">
+        <h3 style="font-size:2.5rem;font-weight:800;margin-bottom:8px" data-count="8" data-suffix="+">0</h3>
+        <p style="opacity:.85;font-size:1rem">Years of Excellence</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ========== OUR VALUES ========== -->
+<section class="programs-section" data-aos="fade-up">
+  <div class="container">
+    <div class="section-header" style="text-align:center;margin-bottom:48px" data-aos="fade-up">
+      <h2 style="font-size:2rem;font-weight:800;color:var(--gray-900);margin-bottom:12px">Our Values</h2>
+      <p style="color:var(--gray-500);font-size:1.125rem;max-width:640px;margin:0 auto">The principles that guide everything we do at ENF.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px">
+
+      <div class="content-box" data-aos="fade-up" style="text-align:center;padding:32px 20px">
+        <div style="width:64px;height:64px;border-radius:50%;background:rgba(79,70,229,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+          <i class="fas fa-award" style="font-size:1.5rem;color:var(--primary)"></i>
+        </div>
+        <h4 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);margin-bottom:8px">Excellence in Education</h4>
+      </div>
+
+      <div class="content-box" data-aos="fade-up" data-aos-delay="100" style="text-align:center;padding:32px 20px">
+        <div style="width:64px;height:64px;border-radius:50%;background:rgba(16,185,129,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+          <i class="fas fa-hand-holding-heart" style="font-size:1.5rem;color:var(--accent)"></i>
+        </div>
+        <h4 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);margin-bottom:8px">Inclusive Access</h4>
+      </div>
+
+      <div class="content-box" data-aos="fade-up" data-aos-delay="200" style="text-align:center;padding:32px 20px">
+        <div style="width:64px;height:64px;border-radius:50%;background:rgba(245,158,11,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+          <i class="fas fa-lightbulb" style="font-size:1.5rem;color:#f59e0b"></i>
+        </div>
+        <h4 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);margin-bottom:8px">Innovation &amp; Technology</h4>
+      </div>
+
+      <div class="content-box" data-aos="fade-up" data-aos-delay="300" style="text-align:center;padding:32px 20px">
+        <div style="width:64px;height:64px;border-radius:50%;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+          <i class="fas fa-handshake" style="font-size:1.5rem;color:#8b5cf6"></i>
+        </div>
+        <h4 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);margin-bottom:8px">Community Partnership</h4>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ========== LEADERSHIP QUICK LINKS ========== -->
+<section class="programs-section" data-aos="fade-up" style="padding-top:0">
+  <div class="container">
+    <div class="section-header" style="text-align:center;margin-bottom:48px" data-aos="fade-up">
+      <h2 style="font-size:2rem;font-weight:800;color:var(--gray-900);margin-bottom:12px">Our Leadership</h2>
+      <p style="color:var(--gray-500);font-size:1.125rem;max-width:640px;margin:0 auto">Meet the people driving ENF's mission forward.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;max-width:800px;margin:0 auto">
+
+      <a href="/founder/" class="content-box" data-aos="fade-up" style="text-align:center;padding:40px 24px;text-decoration:none;transition:transform .3s,box-shadow .3s">
+        <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+          <i class="fas fa-user-tie" style="font-size:1.75rem;color:#fff"></i>
+        </div>
+        <h3 style="font-size:1.25rem;font-weight:700;color:var(--gray-900);margin-bottom:8px">Founder &amp; Trustees</h3>
+        <p style="color:var(--gray-500);font-size:.95rem">Learn about the visionary leaders behind ENF.</p>
+      </a>
+
+      <a href="/management/" class="content-box" data-aos="fade-up" data-aos-delay="100" style="text-align:center;padding:40px 24px;text-decoration:none;transition:transform .3s,box-shadow .3s">
+        <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--primary));display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+          <i class="fas fa-users-cog" style="font-size:1.75rem;color:#fff"></i>
+        </div>
+        <h3 style="font-size:1.25rem;font-weight:700;color:var(--gray-900);margin-bottom:8px">Management Team</h3>
+        <p style="color:var(--gray-500);font-size:.95rem">Meet the dedicated team managing ENF's programs.</p>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- ========== CTA SECTION ========== -->
+<section class="cta-section" data-aos="fade-up">
+  <div class="container">
+    <h2>Join Us in Transforming Education</h2>
+    <p style="color:rgba(255,255,255,.85);max-width:560px;margin:0 auto 24px">Support ENF's mission to empower underprivileged students with world-class education and resources.</p>
+    <div class="cta-buttons">
+      <a href="#contact" class="btn btn-primary btn-lg">Get Involved</a>
+      <a href="/programs/" class="btn btn-outline-white btn-lg">Explore Programs</a>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <!-- Col 1: Brand -->
+      <div class="footer-col">
+        <div class="footer-brand">
+          <div class="logo-icon">E</div>
+          <span>ENF Online Class</span>
+        </div>
+        <p>Ex Navodayan Foundation (ENF) is a premier not-for-profit organization dedicated to empowering Navodaya alumni and students through quality education, mentorship, and technology-enabled learning programs across India.</p>
+        <div class="footer-social">
+          <a href="https://youtube.com" target="_blank" rel="noopener" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+          <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://twitter.com" target="_blank" rel="noopener" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          <a href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+
+      <!-- Col 2: Quick Links -->
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="/about/">About Us</a></li>
+          <li><a href="/programs/">Programs</a></li>
+          <li><a href="/partners/">Partners</a></li>
+          <li><a href="/scholarships/">Scholarships</a></li>
+          <li><a href="/news/">News</a></li>
+          <li><a href="/gallery/">Gallery</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 3: Programs -->
+      <div class="footer-col">
+        <h4>Programs</h4>
+        <ul class="footer-links">
+          <li><a href="/programs/">CoE</a></li>
+          <li><a href="/programs/">ENABLE</a></li>
+          <li><a href="/programs/">TPDDL</a></li>
+          <li><a href="/programs/">ASOSE</a></li>
+          <li><a href="/programs/">SEED</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 4: Get in Touch -->
+      <div class="footer-col">
+        <h4>Get in Touch</h4>
+        <div class="footer-contact">
+          <div class="footer-contact-item">
+            <i class="fas fa-location-dot"></i>
+            <span>B-36/43-46M, Brahmanand Colony, Durgakund, Varanasi, UP (221005)</span>
+          </div>
+          <div class="footer-contact-item">
+            <i class="fas fa-phone"></i>
+            <span>+91-76070 02100</span>
+          </div>
+          <div class="footer-contact-item">
+            <i class="fas fa-envelope"></i>
+            <span>exnavodayanfoundation1@gmail.com</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Bottom -->
+    <div class="footer-bottom">
+      <p>&copy; 2026 Ex Navodayan Foundation. All rights reserved.</p>
+      <p>Design by <a href="https://erpdsoft.com" target="_blank" rel="noopener">ERPDSOFT</a></p>
+    </div>
+  </div>
+</footer>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Navbar scroll effect
+  window.addEventListener('scroll', function () {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+  });
+
+  // Login Modal
+  function openLoginModal() {
+    document.getElementById('loginModal').classList.add('show');
+  }
+  function closeLoginModal() {
+    document.getElementById('loginModal').classList.remove('show');
+  }
+  document.getElementById('loginModal').addEventListener('click', function (e) {
+    if (e.target === this) closeLoginModal();
+  });
+
+  // Mobile menu toggle
+  function toggleMobileMenu() {
+    var links = document.getElementById('navLinks');
+    links.classList.toggle('show');
+  }
+
+  // Counter animation
+  function animateCounters() {
+    document.querySelectorAll('[data-count]').forEach(function (el) {
+      if (el.dataset.animated) return;
+      el.dataset.animated = 'true';
+      var target = parseInt(el.getAttribute('data-count'));
+      var suffix = el.getAttribute('data-suffix') || '';
+      var current = 0;
+      var step = target / 60;
+      var timer = setInterval(function () {
+        current += step;
+        if (current >= target) {
+          current = target;
+          clearInterval(timer);
+        }
+        el.textContent = Math.floor(current).toLocaleString() + suffix;
+      }, 25);
+    });
+  }
+
+  // Intersection Observer for scroll animations
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        if (entry.target.querySelector('[data-count]')) {
+          animateCounters();
+        }
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('[data-aos]').forEach(function (el) {
+    observer.observe(el);
+  });
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+    anchor.addEventListener('click', function (e) {
+      var targetId = this.getAttribute('href');
+      if (targetId === '#') return;
+      e.preventDefault();
+      var target = document.querySelector(targetId);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+{% endblock %}

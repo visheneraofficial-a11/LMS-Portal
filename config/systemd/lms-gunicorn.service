@@ -1,0 +1,29 @@
+[Unit]
+Description=LMS Enterprise Gunicorn (WSGI)
+After=network.target postgresql-18.service redis.service
+Requires=postgresql-18.service
+
+[Service]
+Type=notify
+User=lmsapp
+Group=lmsapp
+RuntimeDirectory=gunicorn
+WorkingDirectory=/u01/app/django/apps
+Environment="DJANGO_SETTINGS_MODULE=lms_enterprise.settings.production"
+Environment="PYTHONPATH=/u01/app/django/apps"
+ExecStart=/u01/app/python-venvs/lms/bin/gunicorn \
+    --config /u01/app/django/config/gunicorn.conf.py \
+    lms_enterprise.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=30
+PrivateTmp=true
+Restart=always
+RestartSec=5
+
+# Resource Limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+[Install]
+WantedBy=multi-user.target

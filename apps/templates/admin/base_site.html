@@ -1,0 +1,128 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/admin_theme.css' %}">
+<script src="{% static 'js/admin_enhancements.js' %}" defer></script>
+{% endblock %}
+
+{% block title %}{{ title }} — ENF Admin Console{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+  <a href="{% url 'admin:index' %}">ENF Online Class — Admin Console</a>
+</h1>
+{% endblock %}
+
+{% block usertools %}
+<div id="user-tools">
+  <span id="enf-header-clock"><i class="fas fa-clock" style="font-size:0.72rem;"></i> <span id="enf-header-clock-text"></span></span>
+  <a href="/" class="enf-header-link" title="Go to website">
+    <i class="fas fa-globe"></i> Website
+  </a>
+  <a href="/staff/dashboard/" class="enf-header-link" title="Staff Dashboard">
+    <i class="fas fa-chart-line"></i> Dashboard
+  </a>
+  <div class="enf-profile-wrapper">
+    <div class="enf-profile-btn" id="enf-profile-toggle">
+      <div class="enf-avatar"><i class="fas fa-user" style="font-size:0.7rem;"></i></div>
+      <span>{% firstof user.get_short_name user.get_username "Admin" %}</span>
+      <i class="fas fa-chevron-down" style="font-size:0.55rem;margin-left:2px;"></i>
+    </div>
+    <div class="enf-profile-dropdown" id="enf-profile-dropdown">
+      <div class="enf-dropdown-header">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="enf-avatar-lg"><i class="fas fa-user-shield"></i></div>
+          <div>
+            <h4>{% firstof user.get_short_name user.get_username "Admin" %}</h4>
+            <p>Super Admin &bull; ENF Online Class</p>
+          </div>
+        </div>
+      </div>
+      <div class="enf-dropdown-section">
+        <div class="enf-dropdown-label">Theme</div>
+        <div class="enf-theme-options" id="enf-theme-options">
+          <label class="enf-theme-option active" data-theme-value="light">
+            <i class="fas fa-sun"></i>
+            <span>Light</span>
+            <span class="enf-theme-check"><i class="fas fa-check"></i></span>
+          </label>
+          <label class="enf-theme-option" data-theme-value="dark">
+            <i class="fas fa-moon"></i>
+            <span>Dark</span>
+            <span class="enf-theme-check"><i class="fas fa-check"></i></span>
+          </label>
+          <label class="enf-theme-option" data-theme-value="auto">
+            <i class="fas fa-desktop"></i>
+            <span>System</span>
+            <span class="enf-theme-check"><i class="fas fa-check"></i></span>
+          </label>
+        </div>
+      </div>
+      <div class="enf-dropdown-section">
+        <div class="enf-dropdown-label">Account</div>
+        <a href="/" class="enf-dropdown-item">
+          <i class="fas fa-globe"></i> View Site
+        </a>
+        <a href="/admin/" class="enf-dropdown-item">
+          <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+        <a href="/admin/auth/user/" class="enf-dropdown-item">
+          <i class="fas fa-user-edit"></i> My Profile
+        </a>
+      </div>
+      <div class="enf-dropdown-section">
+        <div class="enf-dropdown-label">Security</div>
+        <a href="/admin/password_change/" class="enf-dropdown-item">
+          <i class="fas fa-key"></i> Change Password
+        </a>
+        <a href="/admin/accounts/admin/" class="enf-dropdown-item">
+          <i class="fas fa-shield-alt"></i> Enable MFA
+        </a>
+        <a href="/admin/accounts/role/" class="enf-dropdown-item">
+          <i class="fas fa-users-cog"></i> Manage Roles
+        </a>
+      </div>
+      <div class="enf-dropdown-section enf-dropdown-signout">
+        <a href="/admin/logout/" class="enf-dropdown-item enf-signout-item">
+          <i class="fas fa-sign-out-alt"></i> Sign Out
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+{% endblock %}
+
+{% block footer %}
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+  <div>
+    <span style="color:#844FC1;">&#9670;</span>
+    <strong style="color:#844FC1;">ENF Online Class</strong>
+    <span style="color:var(--text-muted);">— Admin Console v4.0</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <span style="color:var(--text-muted);font-size:0.75rem;">Powered by Django {{ django_version }}</span>
+  </div>
+</div>
+<script>
+(function() {
+  function updateClock() {
+    var now = new Date();
+    var opts = { weekday:'short', year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:true };
+    var el = document.getElementById('enf-header-clock-text');
+    if (el) el.textContent = now.toLocaleString('en-IN', opts);
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+})();
+</script>
+{% endblock %}

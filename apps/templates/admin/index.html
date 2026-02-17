@@ -1,0 +1,292 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Admin Console — ENF Online Class{% endblock %}
+
+{% block content %}
+<!-- ══════ TOP STATS ROW ══════ -->
+<div class="enf-stats-grid" id="enf-dashboard-stats">
+  <div class="enf-stat-card">
+    <div class="enf-stat-value" id="stat-students">{{ student_count|default:"0" }}</div>
+    <div class="enf-stat-label">Total Students</div>
+    <div class="enf-stat-icon"><i class="fas fa-user-graduate"></i></div>
+  </div>
+  <div class="enf-stat-card">
+    <div class="enf-stat-value" id="stat-teachers">{{ teacher_count|default:"0" }}</div>
+    <div class="enf-stat-label">Total Teachers</div>
+    <div class="enf-stat-icon" style="background:rgba(22,163,74,0.08);color:#16a34a;"><i class="fas fa-chalkboard-teacher"></i></div>
+  </div>
+  <div class="enf-stat-card">
+    <div class="enf-stat-value" id="stat-batches">{{ batch_count|default:"0" }}</div>
+    <div class="enf-stat-label">Active Batches</div>
+    <div class="enf-stat-icon" style="background:rgba(217,119,6,0.08);color:#d97706;"><i class="fas fa-layer-group"></i></div>
+  </div>
+  <div class="enf-stat-card">
+    <div class="enf-stat-value" id="stat-tests">{{ test_count|default:"0" }}</div>
+    <div class="enf-stat-label">Total Tests</div>
+    <div class="enf-stat-icon" style="background:rgba(220,38,38,0.08);color:#dc2626;"><i class="fas fa-clipboard-list"></i></div>
+  </div>
+  <div class="enf-stat-card">
+    <div class="enf-stat-value" id="stat-sessions">{{ active_sessions|default:"0" }}</div>
+    <div class="enf-stat-label">Active Sessions</div>
+    <div class="enf-stat-icon" style="background:rgba(37,99,235,0.08);color:#2563eb;"><i class="fas fa-wifi"></i></div>
+  </div>
+  <div class="enf-stat-card">
+    <div class="enf-stat-value" id="stat-tenants">{{ tenant_count|default:"0" }}</div>
+    <div class="enf-stat-label">Centers / Tenants</div>
+    <div class="enf-stat-icon" style="background:rgba(124,58,237,0.08);color:#7c3aed;"><i class="fas fa-building"></i></div>
+  </div>
+</div>
+
+<!-- ══════ AI FEATURES — Live from DB ══════ -->
+<div class="enf-ai-config-panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#844FC1,#6C3FAF);display:flex;align-items:center;justify-content:center;">
+        <i class="fas fa-brain" style="color:#fff;font-size:0.9rem;"></i>
+      </div>
+      <div>
+        <h3 style="margin:0;color:#1e293b;font-size:1rem;font-weight:700;">AI Feature Configuration</h3>
+        <p style="margin:0;color:#64748b;font-size:0.78rem;">Manage AI capabilities for your institution</p>
+      </div>
+    </div>
+    <a href="/admin/system_config/aifeatureconfig/" class="enf-action-btn secondary" style="font-size:0.75rem;padding:6px 14px;">
+      <i class="fas fa-cog"></i> Manage All
+    </a>
+  </div>
+
+  {% if ai_features %}
+    {% for feature in ai_features %}
+    <div class="enf-ai-feature-row">
+      <div class="enf-ai-feature-info">
+        <div class="enf-ai-feature-icon" style="background:{% if feature.is_enabled %}rgba(22,163,74,0.1){% else %}rgba(100,116,139,0.08){% endif %};">
+          <i class="{{ feature.icon_class }}" style="color:{% if feature.is_enabled %}#16a34a{% else %}#94a3b8{% endif %};"></i>
+        </div>
+        <div class="enf-ai-feature-details">
+          <h4>{{ feature.feature_name }}</h4>
+          <p>{{ feature.description|default:"—"|truncatewords:12 }}</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="enf-ai-feature-scope">
+          {% if feature.integration_scope == 'ALL' %}
+            <span class="enf-scope-badge admin">Admin</span>
+            <span class="enf-scope-badge teacher">Teacher</span>
+            <span class="enf-scope-badge student">Student</span>
+          {% elif feature.integration_scope == 'ADMIN' %}
+            <span class="enf-scope-badge admin">Admin</span>
+          {% elif feature.integration_scope == 'TEACHER' %}
+            <span class="enf-scope-badge teacher">Teacher</span>
+          {% elif feature.integration_scope == 'STUDENT' %}
+            <span class="enf-scope-badge student">Student</span>
+          {% endif %}
+        </div>
+        {% if feature.is_enabled %}
+          <span class="enf-status active">Enabled</span>
+        {% else %}
+          <span class="enf-status inactive">Disabled</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      <span class="enf-ai-badge">Intelligent Summarization</span>
+      <span class="enf-ai-badge">Adaptive Learning Paths</span>
+      <span class="enf-ai-badge">24×7 AI Doubt Resolution</span>
+      <span class="enf-ai-badge">Predictive Analytics</span>
+      <span class="enf-ai-badge">Auto Assessment Engine</span>
+    </div>
+    <p style="color:#64748b;font-size:0.78rem;margin:12px 0 0;">
+      <i class="fas fa-info-circle" style="margin-right:4px;"></i>
+      No AI features configured yet.
+      <a href="/admin/system_config/aifeatureconfig/add/" style="color:#844FC1;font-weight:600;">Add your first AI feature →</a>
+    </p>
+  {% endif %}
+</div>
+
+<!-- ══════ QUICK ACTIONS ══════ -->
+<div style="background:#FFFFFF;border:1px solid rgba(132,79,193,0.15);border-radius:14px;padding:24px;margin-bottom:24px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+  <h3 style="margin:0 0 16px;color:#1e293b;font-size:0.95rem;font-weight:700;">
+    <i class="fas fa-bolt" style="color:#d97706;margin-right:8px;"></i>Quick Actions
+  </h3>
+  <div class="enf-quick-actions">
+    <a href="/admin/accounts/student/import-csv/" class="enf-action-btn primary"><i class="fas fa-file-import"></i> Import Students</a>
+    <a href="/admin/accounts/student/export-all-csv/" class="enf-action-btn success"><i class="fas fa-file-export"></i> Export Students</a>
+    <a href="/admin/accounts/student/add/" class="enf-action-btn secondary"><i class="fas fa-user-plus"></i> Add Student</a>
+    <a href="/admin/accounts/teacher/add/" class="enf-action-btn secondary"><i class="fas fa-chalkboard-teacher"></i> Add Teacher</a>
+    <a href="/admin/assessments/test/add/" class="enf-action-btn secondary"><i class="fas fa-clipboard-list"></i> Create Test</a>
+    <a href="/admin/classes/scheduledclass/add/" class="enf-action-btn secondary"><i class="fas fa-video"></i> Schedule Class</a>
+    <a href="/admin/communication/announcement/add/" class="enf-action-btn warning"><i class="fas fa-bullhorn"></i> Announcement</a>
+    <a href="/admin/audit/auditlog/" class="enf-action-btn danger"><i class="fas fa-shield-alt"></i> Audit Logs</a>
+    <a href="/admin/system_config/attendancerule/" class="enf-action-btn secondary"><i class="fas fa-clipboard-check"></i> Attendance Rules</a>
+    <a href="/admin/system_config/classlinkconfig/" class="enf-action-btn secondary"><i class="fas fa-link"></i> Class Links</a>
+    <a href="/admin/accounts/role/" class="enf-action-btn secondary"><i class="fas fa-user-shield"></i> Manage Roles</a>
+  </div>
+</div>
+
+<!-- ══════ SYSTEM STATUS + AUTOMATION ══════ -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;">
+  <!-- System Status -->
+  <div style="background:#FFFFFF;border:1px solid rgba(132,79,193,0.15);border-radius:14px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+    <h3 style="margin:0 0 16px;color:#1e293b;font-size:0.95rem;font-weight:700;">
+      <i class="fas fa-heartbeat" style="color:#dc2626;margin-right:8px;"></i>System Status
+    </h3>
+    <div style="display:grid;gap:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(132,79,193,0.06);border-radius:10px;">
+        <span style="color:#475569;font-size:0.85rem;"><i class="fas fa-database" style="width:20px;color:#844FC1;"></i> Database</span>
+        <span class="enf-status active">Online</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(132,79,193,0.06);border-radius:10px;">
+        <span style="color:#475569;font-size:0.85rem;"><i class="fas fa-server" style="width:20px;color:#844FC1;"></i> App Server</span>
+        <span class="enf-status active">Running</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(132,79,193,0.06);border-radius:10px;">
+        <span style="color:#475569;font-size:0.85rem;"><i class="fas fa-shield-alt" style="width:20px;color:#844FC1;"></i> Audit Logger</span>
+        <span class="enf-status active">Active</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(132,79,193,0.06);border-radius:10px;">
+        <span style="color:#475569;font-size:0.85rem;"><i class="fas fa-clock" style="width:20px;color:#844FC1;"></i> Attendance Tracker</span>
+        <span class="enf-status active">Capturing</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(132,79,193,0.06);border-radius:10px;">
+        <span style="color:#475569;font-size:0.85rem;"><i class="fas fa-user-shield" style="width:20px;color:#844FC1;"></i> RBAC Engine</span>
+        <span class="enf-status active">Active</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Automation Status — INTERACTIVE -->
+  <div style="background:#FFFFFF;border:1px solid rgba(132,79,193,0.15);border-radius:14px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+    <h3 style="margin:0 0 16px;color:#1e293b;font-size:0.95rem;font-weight:700;">
+      <i class="fas fa-robot" style="color:#7c3aed;margin-right:8px;"></i>Automation Status
+    </h3>
+    <div id="automation-panels" style="display:grid;gap:6px;">
+      <div class="enf-automation-row" onclick="toggleAutomationDetail('auto-youtube')">
+        <span style="color:#475569;font-size:0.85rem;"><i class="fab fa-youtube" style="width:20px;color:#dc2626;"></i> YouTube Live Auto</span>
+        <span class="enf-status active" id="yt-status">{{ yt_status|default:"Configured" }}</span>
+      </div>
+      <div class="enf-automation-detail" id="auto-youtube">
+        <p style="margin:0 0 8px;color:#64748b;font-size:0.8rem;">
+          Auto-generates YouTube Live links for scheduled classes.
+          <a href="/admin/system_config/classlinkconfig/" style="color:#844FC1;font-weight:600;">Configure →</a>
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span class="enf-scope-badge admin">API Configured</span>
+          <span style="color:#64748b;font-size:0.75rem;">{{ class_link_count|default:"0" }} platform(s)</span>
+        </div>
+      </div>
+
+      <div class="enf-automation-row" onclick="toggleAutomationDetail('auto-scheduling')">
+        <span style="color:#475569;font-size:0.85rem;"><i class="fas fa-calendar-check" style="width:20px;color:#16a34a;"></i> Auto Scheduling</span>
+        <span class="enf-status active">Running</span>
+      </div>
+      <div class="enf-automation-detail" id="auto-scheduling">
+        <p style="margin:0 0 8px;color:#64748b;font-size:0.8rem;">
+          Automatically creates class schedules and generates meeting links.
+          <a href="/admin/classes/scheduledclass/" style="color:#844FC1;font-weight:600;">View Classes →</a>
+        </p>
+      </div>
+
+      <div class="enf-automation-row" onclick="toggleAutomationDetail('auto-ai')">
+        <span style="color:#475569;font-size:0.85rem;"><i class="fas fa-brain" style="width:20px;color:#7c3aed;"></i> AI Doubt Bot</span>
+        <span class="enf-status {% if ai_enabled_count > 0 %}active{% else %}inactive{% endif %}">
+          {{ ai_enabled_count|default:"0" }} Active
+        </span>
+      </div>
+      <div class="enf-automation-detail" id="auto-ai">
+        <p style="margin:0 0 8px;color:#64748b;font-size:0.8rem;">
+          {{ ai_feature_count|default:"0" }} AI feature(s) configured, {{ ai_enabled_count|default:"0" }} enabled.
+          <a href="/admin/system_config/aifeatureconfig/" style="color:#844FC1;font-weight:600;">Manage AI →</a>
+        </p>
+      </div>
+
+      <div class="enf-automation-row" onclick="toggleAutomationDetail('auto-attendance')">
+        <span style="color:#475569;font-size:0.85rem;"><i class="fas fa-clipboard-check" style="width:20px;color:#2563eb;"></i> Attendance Auto</span>
+        <span class="enf-status {% if attendance_rule_count > 0 %}active{% else %}pending{% endif %}">
+          {{ attendance_rule_count|default:"0" }} Rule(s)
+        </span>
+      </div>
+      <div class="enf-automation-detail" id="auto-attendance">
+        <p style="margin:0 0 8px;color:#64748b;font-size:0.8rem;">
+          Auto-capture attendance from live classes.
+          <a href="/admin/system_config/attendancerule/" style="color:#844FC1;font-weight:600;">Configure Rules →</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ RBAC + Attendance Summary Row ══════ -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;">
+  <!-- RBAC Overview -->
+  <div style="background:#FFFFFF;border:1px solid rgba(132,79,193,0.15);border-radius:14px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <h3 style="margin:0;color:#1e293b;font-size:0.95rem;font-weight:700;">
+        <i class="fas fa-user-shield" style="color:#d97706;margin-right:8px;"></i>Role-Based Access
+      </h3>
+      <a href="/admin/accounts/role/" style="color:#844FC1;font-size:0.78rem;font-weight:600;">View All →</a>
+    </div>
+    <div style="display:grid;gap:8px;">
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(220,38,38,0.04);border-radius:8px;">
+        <span style="color:#475569;font-size:0.85rem;"><i class="fas fa-crown" style="color:#dc2626;width:20px;"></i> Admin Roles</span>
+        <span style="color:#1e293b;font-weight:600;">{{ admin_role_count|default:"0" }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(22,163,74,0.04);border-radius:8px;">
+        <span style="color:#475569;font-size:0.85rem;"><i class="fas fa-chalkboard" style="color:#16a34a;width:20px;"></i> Teacher Roles</span>
+        <span style="color:#1e293b;font-weight:600;">{{ teacher_role_count|default:"0" }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(37,99,235,0.04);border-radius:8px;">
+        <span style="color:#475569;font-size:0.85rem;"><i class="fas fa-graduation-cap" style="color:#2563eb;width:20px;"></i> Student Roles</span>
+        <span style="color:#1e293b;font-weight:600;">{{ student_role_count|default:"0" }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(124,58,237,0.04);border-radius:8px;">
+        <span style="color:#475569;font-size:0.85rem;"><i class="fas fa-key" style="color:#7c3aed;width:20px;"></i> Total Permissions</span>
+        <span style="color:#1e293b;font-weight:600;">{{ permission_count|default:"0" }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attendance Overview -->
+  <div style="background:#FFFFFF;border:1px solid rgba(132,79,193,0.15);border-radius:14px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <h3 style="margin:0;color:#1e293b;font-size:0.95rem;font-weight:700;">
+        <i class="fas fa-clipboard-check" style="color:#16a34a;margin-right:8px;"></i>Attendance Today
+      </h3>
+      <a href="/admin/attendance/attendance/" style="color:#844FC1;font-size:0.78rem;font-weight:600;">View All →</a>
+    </div>
+    <div style="display:grid;gap:8px;">
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(22,163,74,0.04);border-radius:8px;">
+        <span style="color:#475569;font-size:0.85rem;"><i class="fas fa-check-circle" style="color:#16a34a;width:20px;"></i> Present</span>
+        <span style="color:#16a34a;font-weight:700;">{{ today_present|default:"0" }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(220,38,38,0.04);border-radius:8px;">
+        <span style="color:#475569;font-size:0.85rem;"><i class="fas fa-times-circle" style="color:#dc2626;width:20px;"></i> Absent</span>
+        <span style="color:#dc2626;font-weight:700;">{{ today_absent|default:"0" }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(217,119,6,0.04);border-radius:8px;">
+        <span style="color:#475569;font-size:0.85rem;"><i class="fas fa-clock" style="color:#d97706;width:20px;"></i> Late</span>
+        <span style="color:#d97706;font-weight:700;">{{ today_late|default:"0" }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(124,58,237,0.04);border-radius:8px;">
+        <span style="color:#475569;font-size:0.85rem;"><i class="fas fa-calendar-minus" style="color:#7c3aed;width:20px;"></i> On Leave</span>
+        <span style="color:#7c3aed;font-weight:700;">{{ today_leave|default:"0" }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ block.super }}
+
+<!-- Automation toggle JS -->
+<script>
+function toggleAutomationDetail(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var visible = el.classList.contains('active');
+  document.querySelectorAll('.enf-automation-detail').forEach(function(d) { d.classList.remove('active'); });
+  if (!visible) { el.classList.add('active'); }
+}
+</script>
+
+{% endblock %}

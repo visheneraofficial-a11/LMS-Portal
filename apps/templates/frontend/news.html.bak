@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+
+<!-- ========== NAVBAR ========== -->
+<nav class="navbar" id="navbar">
+  <div class="container">
+    <a href="/" class="nav-brand">
+      <div class="logo-icon">E</div>
+      <span>ENF Online Class</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/">Home</a></li>
+      <li class="nav-dropdown">
+        <a href="#">About <i class="fas fa-chevron-down" style="font-size:.625rem;margin-left:4px"></i></a>
+        <div class="dropdown-menu">
+          <a href="/about/"><i class="fas fa-building"></i> About ENF</a>
+          <a href="/founder/"><i class="fas fa-user-tie"></i> Founder &amp; Trustees</a>
+          <a href="/management/"><i class="fas fa-users-cog"></i> Management Team</a>
+        </div>
+      </li>
+      <li><a href="/programs/">Programs</a></li>
+      <li><a href="/partners/">Partners</a></li>
+      <li><a href="/scholarships/">Scholarships</a></li>
+      <li><a href="/news/" class="active">News</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="javascript:void(0)" class="btn btn-primary btn-sm" onclick="openLoginModal()"><i class="fas fa-sign-in-alt"></i> Login</a>
+    </div>
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
+  </div>
+</nav>
+
+<!-- ========== LOGIN MODAL ========== -->
+<div class="login-modal-overlay" id="loginModal">
+  <div class="login-modal" style="position:relative">
+    <button class="login-modal-close" onclick="closeLoginModal()"><i class="fas fa-times"></i></button>
+    <div class="login-modal-header">
+      <h2>Welcome Back</h2>
+      <p>Select your role to continue</p>
+    </div>
+    <div class="login-role-grid">
+      <a href="/login/?role=student" class="login-role-card">
+        <div class="role-icon student"><i class="fas fa-user-graduate"></i></div>
+        <h3>Student</h3>
+        <span>Access your classes</span>
+      </a>
+      <a href="/login/?role=teacher" class="login-role-card">
+        <div class="role-icon teacher"><i class="fas fa-chalkboard-teacher"></i></div>
+        <h3>Teacher</h3>
+        <span>Manage your courses</span>
+      </a>
+      <a href="/login/?role=admin" class="login-role-card">
+        <div class="role-icon admin"><i class="fas fa-user-shield"></i></div>
+        <h3>Admin</h3>
+        <span>System management</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE HEADER ========== -->
+<section class="page-header">
+  <div class="container">
+    <h1>News & Updates</h1>
+    <div class="breadcrumb">
+      <a href="/">Home</a> <i class="fas fa-chevron-right" style="font-size:.625rem"></i> <span>News</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========== NEWS SECTION ========== -->
+<section class="section" data-aos="fade-up">
+  <div class="container">
+    <div class="news-grid">
+
+      <!-- Card 1 -->
+      <div class="news-card" data-aos="fade-up" data-aos-delay="0">
+        <div class="news-thumb">
+          <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600" alt="ENF Launches AI-Powered Learning Platform 2026" loading="lazy">
+          <div class="news-date">Feb 10, 2026</div>
+        </div>
+        <div class="news-body">
+          <div class="news-cat">TECHNOLOGY</div>
+          <h3>ENF Launches AI-Powered Learning Platform 2026</h3>
+          <p>Ex Navodayan Foundation introduces cutting-edge AI-powered learning analytics and personalized study paths for JEE/NEET aspirants.</p>
+          <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="news-card" data-aos="fade-up" data-aos-delay="100">
+        <div class="news-thumb">
+          <img src="https://images.unsplash.com/photo-1523050854058-8df90110c8f1?w=600" alt="JEE Advanced 2025: ENF Students Achieve Record Results" loading="lazy">
+          <div class="news-date">Jan 28, 2026</div>
+        </div>
+        <div class="news-body">
+          <div class="news-cat">ACHIEVEMENT</div>
+          <h3>JEE Advanced 2025: ENF Students Achieve Record Results</h3>
+          <p>ENF students secure top ranks in JEE Advanced 2025 with 12 students in top 500 AIR, continuing our tradition of excellence.</p>
+          <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="news-card" data-aos="fade-up" data-aos-delay="200">
+        <div class="news-thumb">
+          <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?w=600" alt="New Partnership with Delhi Board of School Education" loading="lazy">
+          <div class="news-date">Jan 15, 2026</div>
+        </div>
+        <div class="news-body">
+          <div class="news-cat">PARTNERSHIP</div>
+          <h3>New Partnership with Delhi Board of School Education</h3>
+          <p>ENF partners with DBSE to bring quality JEE/NEET coaching to 31 ASoSE schools across Delhi NCR.</p>
+          <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="news-card" data-aos="fade-up" data-aos-delay="0">
+        <div class="news-thumb">
+          <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600" alt="ENABLE Program Expands to 350+ JNVs Nationwide" loading="lazy">
+          <div class="news-date">Dec 20, 2025</div>
+        </div>
+        <div class="news-body">
+          <div class="news-cat">EXPANSION</div>
+          <h3>ENABLE Program Expands to 350+ JNVs Nationwide</h3>
+          <p>The ENABLE program, a joint initiative with Tata Motors and NVS, now reaches over 15,000 students in five regions.</p>
+          <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Card 5 -->
+      <div class="news-card" data-aos="fade-up" data-aos-delay="100">
+        <div class="news-thumb">
+          <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=600" alt="NEET 2025: 45 ENF Students Qualify for AIIMS" loading="lazy">
+          <div class="news-date">Dec 5, 2025</div>
+        </div>
+        <div class="news-body">
+          <div class="news-cat">ACHIEVEMENT</div>
+          <h3>NEET 2025: 45 ENF Students Qualify for AIIMS</h3>
+          <p>Outstanding NEET 2025 results with 45 students securing admission in prestigious AIIMS and top medical colleges.</p>
+          <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Card 6 -->
+      <div class="news-card" data-aos="fade-up" data-aos-delay="200">
+        <div class="news-thumb">
+          <img src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600" alt="New CoE Center Inaugurated at JNV Rajgir, Bihar" loading="lazy">
+          <div class="news-date">Nov 15, 2025</div>
+        </div>
+        <div class="news-body">
+          <div class="news-cat">INFRASTRUCTURE</div>
+          <h3>New CoE Center Inaugurated at JNV Rajgir, Bihar</h3>
+          <p>State-of-the-art Center of Excellence established at JNV Rajgir with modern labs, smart classrooms and hostel facilities.</p>
+          <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Card 7 -->
+      <div class="news-card" data-aos="fade-up" data-aos-delay="0">
+        <div class="news-thumb">
+          <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=600" alt="Tata Motors Renews SEED Program Partnership" loading="lazy">
+          <div class="news-date">Oct 28, 2025</div>
+        </div>
+        <div class="news-body">
+          <div class="news-cat">PARTNERSHIP</div>
+          <h3>Tata Motors Renews SEED Program Partnership</h3>
+          <p>Tata Motors extends its partnership with ENF for the SEED program, benefiting students near Tata Motors plant locations.</p>
+          <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Card 8 -->
+      <div class="news-card" data-aos="fade-up" data-aos-delay="100">
+        <div class="news-thumb">
+          <img src="https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=600" alt="Annual Scholarship Distribution Ceremony 2025" loading="lazy">
+          <div class="news-date">Oct 10, 2025</div>
+        </div>
+        <div class="news-body">
+          <div class="news-cat">EVENT</div>
+          <h3>Annual Scholarship Distribution Ceremony 2025</h3>
+          <p>ENF awards scholarships to 200+ deserving students in a grand ceremony at Varanasi, supported by our corporate partners.</p>
+          <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Card 9 -->
+      <div class="news-card" data-aos="fade-up" data-aos-delay="200">
+        <div class="news-thumb">
+          <img src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=600" alt="ENF Completes 8 Years of Empowering Students" loading="lazy">
+          <div class="news-date">Sep 15, 2025</div>
+        </div>
+        <div class="news-body">
+          <div class="news-cat">MILESTONE</div>
+          <h3>ENF Completes 8 Years of Empowering Students</h3>
+          <p>Celebrating 8 years of transforming lives — from 50 students in 2016 to 15,000+ students across 380+ partner schools.</p>
+          <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ========== CTA SECTION ========== -->
+<section class="cta-section" data-aos="fade-up">
+  <div class="container">
+    <h2>Stay Updated with ENF</h2>
+    <div class="cta-buttons">
+      <a href="#" class="btn btn-primary btn-lg">Subscribe to Newsletter</a>
+      <a href="#contact" class="btn btn-outline-white btn-lg">Contact Us</a>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <!-- Col 1: Brand -->
+      <div class="footer-col">
+        <div class="footer-brand">
+          <div class="logo-icon">E</div>
+          <span>ENF Online Class</span>
+        </div>
+        <p>Ex Navodayan Foundation (ENF) is a premier not-for-profit organization dedicated to empowering Navodaya alumni and students through quality education, mentorship, and technology-enabled learning programs across India.</p>
+        <div class="footer-social">
+          <a href="https://youtube.com" target="_blank" rel="noopener" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+          <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://twitter.com" target="_blank" rel="noopener" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          <a href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+
+      <!-- Col 2: Quick Links -->
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="/about/">About Us</a></li>
+          <li><a href="/programs/">Programs</a></li>
+          <li><a href="/partners/">Partners</a></li>
+          <li><a href="/scholarships/">Scholarships</a></li>
+          <li><a href="/news/">News</a></li>
+          <li><a href="/gallery/">Gallery</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 3: Programs -->
+      <div class="footer-col">
+        <h4>Programs</h4>
+        <ul class="footer-links">
+          <li><a href="/programs/">CoE</a></li>
+          <li><a href="/programs/">ENABLE</a></li>
+          <li><a href="/programs/">TPDDL</a></li>
+          <li><a href="/programs/">ASOSE</a></li>
+          <li><a href="/programs/">SEED</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 4: Get in Touch -->
+      <div class="footer-col">
+        <h4>Get in Touch</h4>
+        <div class="footer-contact">
+          <div class="footer-contact-item">
+            <i class="fas fa-location-dot"></i>
+            <span>B-36/43-46M, Brahmanand Colony, Durgakund, Varanasi, UP (221005)</span>
+          </div>
+          <div class="footer-contact-item">
+            <i class="fas fa-phone"></i>
+            <span>+91-76070 02100</span>
+          </div>
+          <div class="footer-contact-item">
+            <i class="fas fa-envelope"></i>
+            <span>exnavodayanfoundation1@gmail.com</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Bottom -->
+    <div class="footer-bottom">
+      <p>&copy; 2026 Ex Navodayan Foundation. All rights reserved.</p>
+      <p>Design by <a href="https://erpdsoft.com" target="_blank" rel="noopener">ERPDSOFT</a></p>
+    </div>
+  </div>
+</footer>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Navbar scroll effect
+  window.addEventListener('scroll', function () {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+  });
+
+  // Login Modal
+  function openLoginModal() {
+    document.getElementById('loginModal').classList.add('show');
+  }
+  function closeLoginModal() {
+    document.getElementById('loginModal').classList.remove('show');
+  }
+  document.getElementById('loginModal').addEventListener('click', function (e) {
+    if (e.target === this) closeLoginModal();
+  });
+
+  // Mobile menu toggle
+  function toggleMobileMenu() {
+    var links = document.getElementById('navLinks');
+    links.classList.toggle('show');
+  }
+
+  // Intersection Observer for scroll animations
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('[data-aos]').forEach(function (el) {
+    observer.observe(el);
+  });
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+    anchor.addEventListener('click', function (e) {
+      var targetId = this.getAttribute('href');
+      if (targetId === '#') return;
+      e.preventDefault();
+      var target = document.querySelector(targetId);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+{% endblock %}

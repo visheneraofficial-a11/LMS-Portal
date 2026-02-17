@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+
+<!-- ========== NAVBAR ========== -->
+<nav class="navbar" id="navbar">
+  <div class="container">
+    <a href="/" class="nav-brand">
+      <div class="logo-icon">E</div>
+      <span>ENF Online Class</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/">Home</a></li>
+      <li class="nav-dropdown">
+        <a href="#">About <i class="fas fa-chevron-down" style="font-size:.625rem;margin-left:4px"></i></a>
+        <div class="dropdown-menu">
+          <a href="/about/"><i class="fas fa-building"></i> About ENF</a>
+          <a href="/founder/"><i class="fas fa-user-tie"></i> Founder &amp; Trustees</a>
+          <a href="/management/"><i class="fas fa-users-cog"></i> Management Team</a>
+        </div>
+      </li>
+      <li><a href="/programs/" class="active">Programs</a></li>
+      <li><a href="/partners/">Partners</a></li>
+      <li><a href="/scholarships/">Scholarships</a></li>
+      <li><a href="/news/">News</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="javascript:void(0)" class="btn btn-primary btn-sm" onclick="openLoginModal()"><i class="fas fa-sign-in-alt"></i> Login</a>
+    </div>
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
+  </div>
+</nav>
+
+<!-- ========== LOGIN MODAL ========== -->
+<div class="login-modal-overlay" id="loginModal">
+  <div class="login-modal" style="position:relative">
+    <button class="login-modal-close" onclick="closeLoginModal()"><i class="fas fa-times"></i></button>
+    <div class="login-modal-header">
+      <h2>Welcome Back</h2>
+      <p>Select your role to continue</p>
+    </div>
+    <div class="login-role-grid">
+      <a href="/login/?role=student" class="login-role-card">
+        <div class="role-icon student"><i class="fas fa-user-graduate"></i></div>
+        <h3>Student</h3>
+        <span>Access your classes</span>
+      </a>
+      <a href="/login/?role=teacher" class="login-role-card">
+        <div class="role-icon teacher"><i class="fas fa-chalkboard-teacher"></i></div>
+        <h3>Teacher</h3>
+        <span>Manage your courses</span>
+      </a>
+      <a href="/login/?role=admin" class="login-role-card">
+        <div class="role-icon admin"><i class="fas fa-user-shield"></i></div>
+        <h3>Admin</h3>
+        <span>System management</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PAGE HEADER ========== -->
+<section class="page-header">
+  <div class="container">
+    <h1>Our Programs</h1>
+    <div class="breadcrumb">
+      <a href="/">Home</a> <i class="fas fa-chevron-right" style="font-size:.625rem"></i> <span>Programs</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========== PROGRAMS SECTION ========== -->
+<section class="programs-section" data-aos="fade-up">
+  <div class="container">
+
+    <!-- Program Tabs -->
+    <div class="program-tabs" data-aos="fade-up">
+      <button class="program-tab active" data-target="program-coe">COE</button>
+      <button class="program-tab" data-target="program-tpddl">TPDDL</button>
+      <button class="program-tab" data-target="program-asose">ASOSE</button>
+      <button class="program-tab" data-target="program-enable">ENABLE</button>
+      <button class="program-tab" data-target="program-seed">SEED</button>
+    </div>
+
+    <!-- ===== COE Program ===== -->
+    <div class="program-content active" id="program-coe" data-aos="fade-up">
+      <div class="program-card">
+        <div class="program-card-grid">
+          <div class="program-image-area">
+            <i class="fas fa-university"></i>
+          </div>
+          <div class="program-info">
+            <span class="badge badge-primary">2-Year Classroom Program</span>
+            <h2>Center Of Excellence (COE)</h2>
+            <p>Ex Navodayan Foundation offers 2-year coaching program, exclusively to the students of Jawahar Navodaya Vidyalayas (JNV). Students can enroll into this program by qualifying a common entrance test, Navodaya Dakshana Selection Test (NDST), organized by Dakshana Foundation. Students who qualify the test, get the opportunity to enroll themselves, for the 2 year classroom program (Centre of Excellence). Students who opt to pursue their preparation with Ex Navodayan Foundation, are relocated to the JNV centres, where Ex Navodayan Foundation conducts its CoE classes.</p>
+            <div class="program-locations">
+              <span class="loc">JNV Meja – Prayagraj (UP)</span>
+              <span class="loc">JNV Gajokhar – Varanasi (UP)</span>
+              <span class="loc">JNV Rajgir – Nalanda (Bihar)</span>
+            </div>
+            <p>Ex Navodayan Foundation sends its team of experts in Physics, Chemistry, Maths, and Biology, along with the program coordinator, to its respective CoE centers. These faculties reside at the allocated JNV, and guide the students with complete dedication and support, for the preparations of JEE/NEET competitive exams. ENF also assists students with counseling for their desired institutes and helps them with scholarships to deserving students.</p>
+            <div class="program-actions">
+              <a href="#" class="btn btn-primary">Apply Now</a>
+              <a href="#" class="btn btn-ghost">Download Brochure</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TPDDL Program ===== -->
+    <div class="program-content" id="program-tpddl" data-aos="fade-up">
+      <div class="program-card">
+        <div class="program-card-grid">
+          <div class="program-image-area">
+            <i class="fas fa-handshake"></i>
+          </div>
+          <div class="program-info">
+            <span class="badge badge-success">Knowledge Partner</span>
+            <h2>TPDDL Program</h2>
+            <p>Tata Power Delhi Distribution Limited (TPDDL) has graciously appointed us as their knowledge partner to promote high-quality education for a brighter future for students. Since its launch in November 2022, we have successfully enrolled over 150 students in our program. TPDDL provides us with a list of JEE/NEET Aspirants, from various government-owned CBSE-based schools, and we conduct an entrance test to assess their competency. Students are shortlisted based on their performance in this test. TPDDL provides the necessary infrastructure to conduct physical classes.</p>
+            <div class="program-actions">
+              <a href="#" class="btn btn-primary">Apply Now</a>
+              <a href="#" class="btn btn-ghost">Download Brochure</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ASOSE Program ===== -->
+    <div class="program-content" id="program-asose" data-aos="fade-up">
+      <div class="program-card">
+        <div class="program-card-grid">
+          <div class="program-image-area">
+            <i class="fas fa-landmark"></i>
+          </div>
+          <div class="program-info">
+            <span class="badge badge-accent">Delhi Government Partner</span>
+            <h2>ASOSE Program</h2>
+            <p>Ex Navodayan Foundation, functioning as a knowledge partner, collaborated with the Delhi Government to establish physical classes dedicated to JEE and NEET competitive exams. These classes are exclusively available to students affiliated with the Delhi Board of Secondary Education, and are conducted at Dr. Bhim Rao Ambedker School of Special Excellence (ASOSE, Rohini Sec.18), starting from August 2022.</p>
+            <div class="program-actions">
+              <a href="#" class="btn btn-primary">Apply Now</a>
+              <a href="#" class="btn btn-ghost">Download Brochure</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ENABLE Program ===== -->
+    <div class="program-content" id="program-enable" data-aos="fade-up">
+      <div class="program-card">
+        <div class="program-card-grid">
+          <div class="program-image-area">
+            <i class="fas fa-globe"></i>
+          </div>
+          <div class="program-info">
+            <span class="badge badge-primary">Joint Initiative</span>
+            <h2>ENABLE Program</h2>
+            <p>ENABLE (Engineering NEET Admission Bridge Accelerated Learning Engagement) is a joint initiative of Tata Motors, Navodaya Vidyalaya Samiti and Ex Navodayan Foundation, which was started in January 2021. Being a knowledge partner for this program, ENF conducts regular online classes for the JNV students. ENABLE is an Umbrella Program for the students of 350+ JNVs of five regions Bhopal, Patna, Lucknow, Jaipur and Chandigarh since 2021.</p>
+            <div class="program-locations">
+              <span class="loc">Bhopal</span>
+              <span class="loc">Patna</span>
+              <span class="loc">Lucknow</span>
+              <span class="loc">Jaipur</span>
+              <span class="loc">Chandigarh</span>
+            </div>
+            <div class="program-actions">
+              <a href="#" class="btn btn-primary">Apply Now</a>
+              <a href="#" class="btn btn-ghost">Download Brochure</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SEED Program ===== -->
+    <div class="program-content" id="program-seed" data-aos="fade-up">
+      <div class="program-card">
+        <div class="program-card-grid">
+          <div class="program-image-area">
+            <i class="fas fa-seedling"></i>
+          </div>
+          <div class="program-info">
+            <span class="badge badge-success">Tata Motors Initiative</span>
+            <h2>SEED Program</h2>
+            <p>Student Education Excellence and Development Program (SEED) is an initiative by Tata Motors, in which Ex Navodayan Foundation plays an important part as a knowledge partner, in delivering online classes for the competitive exams of JEE/NEET, to the nearby schools of Tata Motors plant locations.</p>
+            <div class="program-actions">
+              <a href="#" class="btn btn-primary">Apply Now</a>
+              <a href="#" class="btn btn-ghost">Download Brochure</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ========== CTA SECTION ========== -->
+<section class="cta-section" data-aos="fade-up">
+  <div class="container">
+    <h2>Ready to Join Our Programs?</h2>
+    <div class="cta-buttons">
+      <a href="#" class="btn btn-primary btn-lg">Apply Now</a>
+      <a href="#contact" class="btn btn-outline-white btn-lg">Contact Us</a>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <!-- Col 1: Brand -->
+      <div class="footer-col">
+        <div class="footer-brand">
+          <div class="logo-icon">E</div>
+          <span>ENF Online Class</span>
+        </div>
+        <p>Ex Navodayan Foundation (ENF) is a premier not-for-profit organization dedicated to empowering Navodaya alumni and students through quality education, mentorship, and technology-enabled learning programs across India.</p>
+        <div class="footer-social">
+          <a href="https://youtube.com" target="_blank" rel="noopener" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+          <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://twitter.com" target="_blank" rel="noopener" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          <a href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+
+      <!-- Col 2: Quick Links -->
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul class="footer-links">
+          <li><a href="/about/">About Us</a></li>
+          <li><a href="/programs/">Programs</a></li>
+          <li><a href="/partners/">Partners</a></li>
+          <li><a href="/scholarships/">Scholarships</a></li>
+          <li><a href="/news/">News</a></li>
+          <li><a href="/gallery/">Gallery</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 3: Programs -->
+      <div class="footer-col">
+        <h4>Programs</h4>
+        <ul class="footer-links">
+          <li><a href="/programs/">CoE</a></li>
+          <li><a href="/programs/">ENABLE</a></li>
+          <li><a href="/programs/">TPDDL</a></li>
+          <li><a href="/programs/">ASOSE</a></li>
+          <li><a href="/programs/">SEED</a></li>
+        </ul>
+      </div>
+
+      <!-- Col 4: Get in Touch -->
+      <div class="footer-col">
+        <h4>Get in Touch</h4>
+        <div class="footer-contact">
+          <div class="footer-contact-item">
+            <i class="fas fa-location-dot"></i>
+            <span>B-36/43-46M, Brahmanand Colony, Durgakund, Varanasi, UP (221005)</span>
+          </div>
+          <div class="footer-contact-item">
+            <i class="fas fa-phone"></i>
+            <span>+91-76070 02100</span>
+          </div>
+          <div class="footer-contact-item">
+            <i class="fas fa-envelope"></i>
+            <span>exnavodayanfoundation1@gmail.com</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Bottom -->
+    <div class="footer-bottom">
+      <p>&copy; 2026 Ex Navodayan Foundation. All rights reserved.</p>
+      <p>Design by <a href="https://erpdsoft.com" target="_blank" rel="noopener">ERPDSOFT</a></p>
+    </div>
+  </div>
+</footer>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Program Tab Switching
+  document.querySelectorAll('.program-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.program-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.program-content').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+      document.getElementById(this.dataset.target).classList.add('active');
+    });
+  });
+
+  // Navbar scroll effect
+  window.addEventListener('scroll', function () {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+  });
+
+  // Login Modal
+  function openLoginModal() {
+    document.getElementById('loginModal').classList.add('show');
+  }
+  function closeLoginModal() {
+    document.getElementById('loginModal').classList.remove('show');
+  }
+  document.getElementById('loginModal').addEventListener('click', function (e) {
+    if (e.target === this) closeLoginModal();
+  });
+
+  // Mobile menu toggle
+  function toggleMobileMenu() {
+    var links = document.getElementById('navLinks');
+    links.classList.toggle('show');
+  }
+
+  // Intersection Observer for scroll animations
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('[data-aos]').forEach(function (el) {
+    observer.observe(el);
+  });
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+    anchor.addEventListener('click', function (e) {
+      var targetId = this.getAttribute('href');
+      if (targetId === '#') return;
+      e.preventDefault();
+      var target = document.querySelector(targetId);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+{% endblock %}

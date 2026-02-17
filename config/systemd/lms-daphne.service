@@ -1,0 +1,27 @@
+[Unit]
+Description=LMS Enterprise Daphne (ASGI/WebSocket)
+After=network.target postgresql-18.service redis.service
+Requires=redis.service
+
+[Service]
+Type=simple
+User=lmsapp
+Group=lmsapp
+WorkingDirectory=/u01/app/django/apps
+Environment="DJANGO_SETTINGS_MODULE=lms_enterprise.settings.production"
+Environment="PYTHONPATH=/u01/app/django/apps"
+ExecStart=/u01/app/python-venvs/lms/bin/daphne \
+    --unix-socket /u01/app/django/run/daphne.sock \
+    --access-log /u01/app/django/logs/daphne-access.log \
+    --proxy-headers \
+    --verbosity 1 \
+    lms_enterprise.asgi:application
+KillMode=mixed
+TimeoutStopSec=30
+Restart=always
+RestartSec=5
+
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

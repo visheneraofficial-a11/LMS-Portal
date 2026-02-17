@@ -1,0 +1,29 @@
+[Unit]
+Description=LMS Enterprise Celery Worker
+After=network.target redis.service postgresql-18.service
+
+[Service]
+Type=forking
+User=lmsapp
+Group=lmsapp
+WorkingDirectory=/u01/app/django/apps
+Environment="DJANGO_SETTINGS_MODULE=lms_enterprise.settings.production"
+Environment="PYTHONPATH=/u01/app/django/apps"
+ExecStart=/u01/app/python-venvs/lms/bin/celery \
+    -A lms_enterprise \
+    worker \
+    --loglevel=info \
+    --concurrency=4 \
+    --max-tasks-per-child=1000 \
+    --pidfile=/u01/app/django/run/celery-worker.pid \
+    --logfile=/u01/app/django/logs/celery-worker.log
+ExecStop=/bin/kill -s TERM $MAINPID
+KillMode=mixed
+TimeoutStopSec=300
+Restart=always
+RestartSec=10
+
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
