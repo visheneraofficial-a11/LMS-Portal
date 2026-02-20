@@ -5,7 +5,7 @@ from academics.models import (
     Chapter, Topic, Batch, BatchStudent, BatchTeacher,
     Language, State, City, Religion, School,
 )
-from admin_utils import EnhancedModelAdmin, ImportExportMixin, export_as_csv, export_as_json, activate_selected, deactivate_selected, colored_status
+from core.admin_utils import EnhancedModelAdmin, ImportExportMixin, export_as_csv, export_as_json, activate_selected, deactivate_selected, colored_status
 
 
 class BatchStudentInline(admin.TabularInline):

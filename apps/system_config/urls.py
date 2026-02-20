@@ -10,7 +10,7 @@ from system_config.models import (
 )
 
 app_name = 'system_config'
-P = [permissions.AllowAny]
+# P removed — using IsAuthenticated default from settings
 
 
 class SystemSettingSerializer(s.ModelSerializer):
@@ -51,7 +51,7 @@ class EnquiryFormSerializer(s.ModelSerializer):
 
 
 class RootView(APIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     def get(self, request):
         return Response({'success': True, 'data': {
             'endpoints': {
@@ -66,52 +66,52 @@ class RootView(APIView):
 
 
 class SettingList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = SystemSetting.objects.all()
     serializer_class = SystemSettingSerializer
 
 class SettingDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = SystemSetting.objects.all()
     serializer_class = SystemSettingSerializer
 
 class FeatureFlagList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = FeatureFlag.objects.all()
     serializer_class = FeatureFlagSerializer
 
 class FeatureFlagDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = FeatureFlag.objects.all()
     serializer_class = FeatureFlagSerializer
 
 class MFAPolicyList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = MFAPolicy.objects.all()
     serializer_class = MFAPolicySerializer
 
 class MaintenanceList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = MaintenanceWindow.objects.all()
     serializer_class = MaintenanceWindowSerializer
 
 class FounderList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = FounderInfo.objects.all()
     serializer_class = FounderInfoSerializer
 
 class FounderDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = FounderInfo.objects.all()
     serializer_class = FounderInfoSerializer
 
 class EnquiryList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = EnquiryForm.objects.all()
     serializer_class = EnquiryFormSerializer
 
 class EnquiryDetail(generics.RetrieveAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = EnquiryForm.objects.all()
     serializer_class = EnquiryFormSerializer
 

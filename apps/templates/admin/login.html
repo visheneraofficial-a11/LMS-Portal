@@ -423,7 +423,7 @@ body.login .main { padding: 0 !important; }
       <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
         <div class="form-row">
           {{ form.username.errors }}
-          <label for="id_username">Username</label>
+            <label for="id_username">Username or Email</label>
           {{ form.username }}
         </div>
         <div class="form-row">
@@ -445,11 +445,6 @@ body.login .main { padding: 0 !important; }
 
       <div class="admin-login-footer">
         <a href="/"><i class="fas fa-arrow-left"></i> Back to Home</a>
-        <p class="login-hint">
-          Use your <strong>username</strong> (not email) to sign in.<br>
-          Contact your administrator if you need access.
-        </p>
-      </div>
 
       <div class="admin-login-clock" id="admin-login-clock"></div>
     </div>

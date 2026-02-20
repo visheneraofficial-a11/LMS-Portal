@@ -4,7 +4,7 @@ from communication.models import (
     SupportTicket, TicketMessage, Announcement, AnnouncementRead,
     DirectMessage, Notification
 )
-from admin_utils import EnhancedModelAdmin, ImportExportMixin, export_as_csv, export_as_json, activate_selected, deactivate_selected, colored_status
+from core.admin_utils import EnhancedModelAdmin, ImportExportMixin, export_as_csv, export_as_json, activate_selected, deactivate_selected, colored_status
 
 
 class TicketMessageInline(admin.TabularInline):

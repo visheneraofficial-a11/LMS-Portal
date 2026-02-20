@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from materials.models import StudyMaterial, MaterialAccess, PhotoGallery, Scholarship, TopperStudent
-from admin_utils import EnhancedModelAdmin, ImportExportMixin, export_as_csv, export_as_json, activate_selected, deactivate_selected, colored_status
+from core.admin_utils import EnhancedModelAdmin, ImportExportMixin, export_as_csv, export_as_json, activate_selected, deactivate_selected, colored_status
 
 
 @admin.register(StudyMaterial)

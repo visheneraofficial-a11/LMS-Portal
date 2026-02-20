@@ -14,11 +14,11 @@ from assessments.serializers import (
 )
 
 app_name = 'assessments'
-P = [permissions.AllowAny]
+# P removed — using IsAuthenticated default from settings
 
 
 class RootView(APIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     def get(self, request):
         return Response({'success': True, 'data': {
             'endpoints': {
@@ -32,48 +32,48 @@ class RootView(APIView):
 
 
 class TestList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Test.objects.all()
     serializer_class = TestListSerializer
 
 class TestDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Test.objects.all()
     serializer_class = TestDetailSerializer
 
 class TestSectionList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     serializer_class = TestSectionSerializer
     def get_queryset(self):
         return TestSection.objects.filter(test_id=self.kwargs['pk'])
 
 class QuestionList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
 
 class QuestionDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
 
 class AttemptList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = TestAttempt.objects.all()
     serializer_class = TestAttemptSerializer
 
 class AttemptDetail(generics.RetrieveAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = TestAttempt.objects.all()
     serializer_class = TestAttemptSerializer
 
 class FeedbackList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = TestFeedback.objects.all()
     serializer_class = TestFeedbackSerializer
 
 class OfflineMarksList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = OfflineTestMarks.objects.all()
     serializer_class = OfflineTestMarksSerializer
 

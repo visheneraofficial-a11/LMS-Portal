@@ -14,7 +14,7 @@ class TenantMiddleware(MiddlewareMixin):
     Middleware to resolve the current tenant from request host.
     Sets request.tenant for use in views and querysets.
     """
-    EXEMPT_PATHS = ['/admin/', '/api/v1/system/health/']
+    EXEMPT_PATHS = ['/admin/', '/staff/', '/api/v1/system/health/']
 
     def process_request(self, request):
         # Skip tenant resolution for exempt paths

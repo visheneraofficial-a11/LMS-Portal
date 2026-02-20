@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from realtime.models import RealtimeEvent
-from admin_utils import EnhancedModelAdmin, export_as_csv, export_as_json, colored_status
+from core.admin_utils import EnhancedModelAdmin, export_as_csv, export_as_json, colored_status
 
 
 @admin.register(RealtimeEvent)

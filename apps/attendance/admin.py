@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.db.models import Count, Q
 from attendance.models import Attendance, AttendanceCorrectionRequest, AttendanceSummary
-from admin_utils import (
+from core.admin_utils import (
     EnhancedModelAdmin, ImportExportMixin, export_as_csv,
     export_as_json, colored_status, activate_selected, deactivate_selected,
 )
@@ -98,7 +98,7 @@ class AttendanceAdmin(ImportExportMixin, EnhancedModelAdmin):
     def user_id_short(self, obj):
         uid = str(getattr(obj, 'user_id', ''))
         return format_html(
-            '<span style="font-family:monospace;font-size:0.78rem;color:#cbd5e1;" title="{}">{}</span>',
+            '<span style="font-family:monospace;font-size:0.78rem;color:#475569;" title="{}">{}</span>',
             uid, uid[:8]
         )
     user_id_short.short_description = 'User'
@@ -274,18 +274,18 @@ class AttendanceSummaryAdmin(EnhancedModelAdmin):
 
     def user_id_short(self, obj):
         uid = str(getattr(obj, 'user_id', ''))
-        return format_html('<span style="font-family:monospace;font-size:0.78rem;color:#cbd5e1;">{}</span>', uid[:8])
+        return format_html('<span style="font-family:monospace;font-size:0.78rem;color:#475569;">{}</span>', uid[:8])
     user_id_short.short_description = 'User'
 
     def month_year(self, obj):
         import calendar
         m = getattr(obj, 'month', 1)
         y = getattr(obj, 'year', 2026)
-        return format_html('<span style="color:#e2e8f0;font-weight:600;">{} {}</span>', calendar.month_abbr[m], y)
+        return format_html('<span style="color:#1e293b;font-weight:600;">{} {}</span>', calendar.month_abbr[m], y)
     month_year.short_description = 'Period'
 
     def working_days(self, obj):
-        return format_html('<span style="color:#cbd5e1;">{}</span>', getattr(obj, 'total_working_days', 0))
+        return format_html('<span style="color:#475569;">{}</span>', getattr(obj, 'total_working_days', 0))
     working_days.short_description = 'Working'
 
     def present_badge(self, obj):

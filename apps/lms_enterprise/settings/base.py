@@ -44,6 +44,8 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     'rest_framework',
+    'drf_spectacular',
+    'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'corsheaders',
     'django_filters',
@@ -62,9 +64,17 @@ LOCAL_APPS = [
     'audit.apps.AuditConfig',
     'system_config.apps.SystemConfigConfig',
     'realtime.apps.RealtimeConfig',
+    'core',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+
+# ---------------------------------------------------------------------------
+# Authentication Backends (allow admin login with username OR email)
+# ---------------------------------------------------------------------------
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.UsernameOrEmailBackend',
+]
 
 # ---------------------------------------------------------------------------
 # Middleware
@@ -188,6 +198,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # REST Framework
 # ---------------------------------------------------------------------------
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
@@ -409,3 +420,14 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Kolkata'
 CELERY_BEAT_SCHEDULE = {}
+
+
+# ── drf-spectacular API documentation settings (added by remediation) ──
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'LMS API',
+    'DESCRIPTION': 'Learning Management System API Documentation',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SCHEMA_PATH_PREFIX': r'/api/',
+}

@@ -439,3 +439,339 @@ class AttendanceRule(models.Model):
 
     def __str__(self):
         return f"{self.rule_name} ({'Active' if self.is_active else 'Inactive'})"
+
+
+# ---------------------------------------------------------------------------
+# Integration Configuration — LLM, AI, YouTube, Third-party APIs
+# ---------------------------------------------------------------------------
+class IntegrationConfig(models.Model):
+    """Manages external service integrations: LLM providers, YouTube channels, APIs."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        'tenants.Tenant', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='integrations',
+    )
+
+    class IntegrationType(models.TextChoices):
+        LLM = 'LLM', 'LLM / AI Model'
+        YOUTUBE = 'YOUTUBE', 'YouTube Channel'
+        ZOOM = 'ZOOM', 'Zoom'
+        GOOGLE_MEET = 'GOOGLE_MEET', 'Google Meet'
+        WHATSAPP = 'WHATSAPP', 'WhatsApp API'
+        SMS = 'SMS', 'SMS Gateway'
+        EMAIL = 'EMAIL', 'Email Service'
+        STORAGE = 'STORAGE', 'Cloud Storage'
+        PAYMENT = 'PAYMENT', 'Payment Gateway'
+        ANALYTICS = 'ANALYTICS', 'Analytics Platform'
+        CUSTOM = 'CUSTOM', 'Custom Integration'
+
+    integration_type = models.CharField(max_length=20, choices=IntegrationType.choices)
+    name = models.CharField(max_length=200, help_text='Display name e.g. "OpenAI GPT-4"')
+    description = models.TextField(null=True, blank=True)
+
+    # Provider specifics
+    provider = models.CharField(max_length=100, help_text='e.g. openai, anthropic, google, youtube')
+    api_endpoint = models.URLField(max_length=500, null=True, blank=True)
+    api_key = models.TextField(null=True, blank=True, help_text='Encrypted API key')
+    api_secret = models.TextField(null=True, blank=True, help_text='Encrypted secret')
+    oauth_client_id = models.CharField(max_length=300, null=True, blank=True)
+    oauth_client_secret = models.TextField(null=True, blank=True)
+    oauth_token = models.TextField(null=True, blank=True)
+    oauth_refresh_token = models.TextField(null=True, blank=True)
+    oauth_token_expiry = models.DateTimeField(null=True, blank=True)
+    webhook_url = models.URLField(max_length=500, null=True, blank=True)
+
+    # LLM-specific
+    model_name = models.CharField(max_length=100, null=True, blank=True, help_text='e.g. gpt-4, claude-3')
+    max_tokens = models.IntegerField(null=True, blank=True, default=4096)
+    temperature = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True, default=0.7)
+    system_prompt = models.TextField(null=True, blank=True, help_text='Default system prompt for AI')
+
+    # YouTube-specific
+    channel_id = models.CharField(max_length=100, null=True, blank=True)
+    channel_name = models.CharField(max_length=200, null=True, blank=True)
+    playlist_ids = models.JSONField(default=list, blank=True)
+    auto_sync_videos = models.BooleanField(default=False)
+
+    # Rate limiting
+    max_requests_per_hour = models.IntegerField(default=100)
+    max_requests_per_user = models.IntegerField(default=20)
+    daily_budget_limit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    monthly_budget_limit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    # Status
+    is_active = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
+    last_health_check = models.DateTimeField(null=True, blank=True)
+
+    class HealthStatus(models.TextChoices):
+        HEALTHY = 'HEALTHY', 'Healthy'
+        DEGRADED = 'DEGRADED', 'Degraded'
+        DOWN = 'DOWN', 'Down'
+        UNKNOWN = 'UNKNOWN', 'Unknown'
+
+    health_status = models.CharField(max_length=10, choices=HealthStatus.choices, default=HealthStatus.UNKNOWN)
+
+    # Extra config
+    config_json = models.JSONField(default=dict, blank=True, help_text='Additional params')
+    usage_stats = models.JSONField(default=dict, blank=True)
+
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.UUIDField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'integration_configs'
+        ordering = ['integration_type', 'name']
+
+    def __str__(self):
+        status = 'Active' if self.is_active else 'Inactive'
+        return f"{self.name} ({self.get_integration_type_display()}) [{status}]"
+
+
+# ---------------------------------------------------------------------------
+# Website / Frontend Settings
+# ---------------------------------------------------------------------------
+class WebsiteSetting(models.Model):
+    """Frontend website configuration: homepage, themes, branding."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    class SectionType(models.TextChoices):
+        HERO = 'HERO', 'Hero Section'
+        ABOUT = 'ABOUT', 'About Section'
+        PROGRAMS = 'PROGRAMS', 'Programs Section'
+        TESTIMONIALS = 'TESTIMONIALS', 'Testimonials'
+        FOUNDER = 'FOUNDER', 'Founders & Team'
+        FOOTER = 'FOOTER', 'Footer'
+        SEO = 'SEO', 'SEO & Meta'
+        SOCIAL = 'SOCIAL', 'Social Media Links'
+        BRANDING = 'BRANDING', 'Branding & Logo'
+        CONTACT = 'CONTACT', 'Contact Info'
+        NEWS = 'NEWS', 'News & Updates'
+        CUSTOM = 'CUSTOM', 'Custom Section'
+
+    section = models.CharField(max_length=20, choices=SectionType.choices)
+    setting_key = models.CharField(max_length=200)
+    setting_value = models.TextField(null=True, blank=True)
+    setting_json = models.JSONField(default=dict, blank=True)
+    media_url = models.URLField(max_length=1000, null=True, blank=True)
+    sort_order = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.UUIDField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'website_settings'
+        ordering = ['section', 'sort_order']
+        constraints = [
+            models.UniqueConstraint(fields=['section', 'setting_key'], name='uq_website_section_key'),
+        ]
+
+    def __str__(self):
+        return f"{self.get_section_display()} — {self.setting_key}"
+
+
+# ---------------------------------------------------------------------------
+# Report Template — for management reporting
+# ---------------------------------------------------------------------------
+class ReportTemplate(models.Model):
+    """Pre-configured report templates for management export."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        'tenants.Tenant', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='report_templates',
+    )
+
+    name = models.CharField(max_length=200)
+    description = models.TextField(null=True, blank=True)
+
+    class ReportType(models.TextChoices):
+        STUDENT = 'STUDENT', 'Student Report'
+        TEACHER = 'TEACHER', 'Teacher Report'
+        ATTENDANCE = 'ATTENDANCE', 'Attendance Report'
+        EXAM = 'EXAM', 'Exam/Test Report'
+        CENTER = 'CENTER', 'Center-wise Report'
+        FINANCIAL = 'FINANCIAL', 'Financial Report'
+        COMBINED = 'COMBINED', 'Combined/Custom Report'
+
+    report_type = models.CharField(max_length=15, choices=ReportType.choices)
+
+    # Filter configuration (saved as JSON)
+    filters_json = models.JSONField(default=dict, blank=True, help_text='Saved filter conditions')
+    columns_json = models.JSONField(default=list, blank=True, help_text='Selected columns for export')
+    group_by = models.JSONField(default=list, blank=True, help_text='Group by fields')
+    sort_by = models.JSONField(default=list, blank=True, help_text='Sort fields')
+
+    class ExportFormat(models.TextChoices):
+        CSV = 'CSV', 'CSV'
+        EXCEL = 'EXCEL', 'Excel'
+        PDF = 'PDF', 'PDF'
+        JSON = 'JSON', 'JSON'
+
+    default_format = models.CharField(max_length=5, choices=ExportFormat.choices, default=ExportFormat.EXCEL)
+    is_scheduled = models.BooleanField(default=False)
+    schedule_cron = models.CharField(max_length=100, null=True, blank=True)
+    recipients_email = models.JSONField(default=list, blank=True)
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.UUIDField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'report_templates'
+        ordering = ['report_type', 'name']
+
+    def __str__(self):
+        return f"{self.name} ({self.get_report_type_display()})"
+
+
+# ---------------------------------------------------------------------------
+# News / Priority Announcements for Website
+# ---------------------------------------------------------------------------
+class WebsiteNews(models.Model):
+    """News items and priority announcements for the public website."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        'tenants.Tenant', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='website_news',
+    )
+
+    class NewsType(models.TextChoices):
+        ANNOUNCEMENT = 'ANNOUNCEMENT', 'Announcement'
+        NEWS = 'NEWS', 'News'
+        EVENT = 'EVENT', 'Event'
+        ALERT = 'ALERT', 'Priority Alert'
+        UPDATE = 'UPDATE', 'Update'
+
+    class Priority(models.TextChoices):
+        LOW = 'LOW', 'Low'
+        NORMAL = 'NORMAL', 'Normal'
+        HIGH = 'HIGH', 'High'
+        URGENT = 'URGENT', 'Urgent'
+
+    title = models.CharField(max_length=300)
+    slug = models.SlugField(max_length=350, blank=True)
+    summary = models.TextField(max_length=500, blank=True)
+    content = models.TextField(blank=True)
+    news_type = models.CharField(max_length=15, choices=NewsType.choices, default=NewsType.NEWS)
+    priority = models.CharField(max_length=10, choices=Priority.choices, default=Priority.NORMAL)
+    featured_image = models.URLField(max_length=1000, blank=True, null=True)
+    
+    # Display options
+    show_on_homepage = models.BooleanField(default=True)
+    show_as_banner = models.BooleanField(default=False)
+    banner_color = models.CharField(max_length=20, default='#2563eb', blank=True)
+    
+    publish_date = models.DateTimeField(default=timezone.now)
+    expiry_date = models.DateTimeField(null=True, blank=True)
+    is_published = models.BooleanField(default=False)
+    
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.UUIDField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'website_news'
+        ordering = ['-priority', '-publish_date']
+        verbose_name = 'Website News'
+        verbose_name_plural = 'Website News'
+
+    def __str__(self):
+        return f"{self.title} ({self.get_news_type_display()})"
+
+
+# ---------------------------------------------------------------------------
+# Testimonials for Website
+# ---------------------------------------------------------------------------
+class Testimonial(models.Model):
+    """Testimonials from students/parents for the public website."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        'tenants.Tenant', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='testimonials',
+    )
+
+    class AuthorType(models.TextChoices):
+        STUDENT = 'STUDENT', 'Student'
+        PARENT = 'PARENT', 'Parent'
+        TEACHER = 'TEACHER', 'Teacher'
+        ALUMNI = 'ALUMNI', 'Alumni'
+        OTHER = 'OTHER', 'Other'
+
+    author_name = models.CharField(max_length=200)
+    author_type = models.CharField(max_length=10, choices=AuthorType.choices, default=AuthorType.STUDENT)
+    author_designation = models.CharField(max_length=200, blank=True, help_text="e.g., 'Class 12 Student', 'JEE Advanced 2025'")
+    author_photo = models.URLField(max_length=1000, blank=True, null=True)
+    
+    content = models.TextField(help_text='Testimonial text')
+    rating = models.IntegerField(default=5, help_text='Rating out of 5')
+    
+    achievement = models.CharField(max_length=300, blank=True, help_text="e.g., 'AIR 45 in JEE Advanced'")
+    batch_year = models.CharField(max_length=20, blank=True)
+    
+    is_featured = models.BooleanField(default=False)
+    sort_order = models.IntegerField(default=0)
+    is_published = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'testimonials'
+        ordering = ['-is_featured', 'sort_order', '-created_at']
+
+    def __str__(self):
+        return f"{self.author_name} - {self.get_author_type_display()}"
+
+
+# ---------------------------------------------------------------------------
+# Footer Configuration
+# ---------------------------------------------------------------------------
+class FooterConfig(models.Model):
+    """Footer sections and links for the public website."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        'tenants.Tenant', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='footer_configs',
+    )
+
+    class SectionType(models.TextChoices):
+        QUICK_LINKS = 'QUICK_LINKS', 'Quick Links'
+        RESOURCES = 'RESOURCES', 'Resources'
+        CONTACT = 'CONTACT', 'Contact Info'
+        SOCIAL = 'SOCIAL', 'Social Media'
+        LEGAL = 'LEGAL', 'Legal Links'
+        NEWSLETTER = 'NEWSLETTER', 'Newsletter'
+        CUSTOM = 'CUSTOM', 'Custom Section'
+
+    section = models.CharField(max_length=20, choices=SectionType.choices)
+    section_title = models.CharField(max_length=100)
+    
+    # For link-based sections
+    links_json = models.JSONField(default=list, blank=True, help_text='Array of {label, url, icon?}')
+    
+    # For contact section
+    contact_email = models.EmailField(blank=True)
+    contact_phone = models.CharField(max_length=30, blank=True)
+    contact_address = models.TextField(blank=True)
+    
+    # For social media
+    social_links_json = models.JSONField(default=dict, blank=True, help_text='{facebook, twitter, instagram, youtube, linkedin}')
+    
+    # For newsletter
+    newsletter_text = models.CharField(max_length=200, blank=True)
+    
+    # Copyright
+    copyright_text = models.CharField(max_length=300, blank=True)
+    
+    sort_order = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'footer_configs'
+        ordering = ['sort_order']
+
+    def __str__(self):
+        return f"{self.section_title} ({self.get_section_display()})"

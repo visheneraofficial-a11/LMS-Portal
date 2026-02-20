@@ -7,7 +7,7 @@ from attendance.models import Attendance, AttendanceSummary, AttendanceCorrectio
 from rest_framework import serializers as s
 
 app_name = 'attendance'
-P = [permissions.AllowAny]
+# P removed — using IsAuthenticated default from settings
 
 
 class AttendanceSerializer(s.ModelSerializer):
@@ -30,7 +30,7 @@ class CorrectionRequestSerializer(s.ModelSerializer):
 
 
 class RootView(APIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     def get(self, request):
         return Response({'success': True, 'data': {
             'endpoints': {
@@ -42,37 +42,37 @@ class RootView(APIView):
         }})
 
 class AttendanceList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
 
 class AttendanceDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
 
 class MarkView(APIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     def post(self, request):
         return Response({'success': True, 'message': 'Attendance marked'})
 
 class BulkMarkView(APIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     def post(self, request):
         return Response({'success': True, 'message': 'Bulk attendance marked'})
 
 class CorrectionList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = AttendanceCorrectionRequest.objects.all()
     serializer_class = CorrectionRequestSerializer
 
 class CorrectionDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = AttendanceCorrectionRequest.objects.all()
     serializer_class = CorrectionRequestSerializer
 
 class SummaryList(generics.ListAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = AttendanceSummary.objects.all()
     serializer_class = AttendanceSummarySerializer
 

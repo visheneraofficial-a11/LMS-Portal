@@ -11,7 +11,7 @@ app_name = 'admin_api'
 
 
 class _RootView(APIView):
-    permission_classes = [permissions.AllowAny]
+    # permission_classes uses IsAuthenticated default from settings
     def get(self, request):
         return Response({'success': True, 'data': {
             'endpoints': {

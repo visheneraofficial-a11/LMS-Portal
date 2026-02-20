@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from classes.models import YouTubeChannel, ScheduledClass, ClassAccessToken, ClassWatchTime
-from admin_utils import EnhancedModelAdmin, ImportExportMixin, export_as_csv, export_as_json, activate_selected, deactivate_selected, colored_status
+from core.admin_utils import EnhancedModelAdmin, ImportExportMixin, export_as_csv, export_as_json, activate_selected, deactivate_selected, colored_status
 
 
 @admin.register(YouTubeChannel)
@@ -93,7 +93,7 @@ class ClassWatchTimeAdmin(EnhancedModelAdmin):
         secs = getattr(obj, 'total_watch_seconds', 0) or 0
         mins = secs // 60
         remaining = secs % 60
-        return format_html('<span style="font-weight:600;color:#e2e8f0;">{}m {}s</span>', mins, remaining)
+        return format_html('<span style="font-weight:600;color:#1e293b;">{}m {}s</span>', mins, remaining)
     watch_time_display.short_description = 'Watch Time'
 
     def completion_badge(self, obj):

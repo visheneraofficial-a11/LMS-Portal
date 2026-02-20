@@ -88,6 +88,11 @@ is_db_running() {
 }
 
 is_app_running() {
+    # Check systemd-managed gunicorn first
+    if systemctl is-active --quiet gunicorn.service 2>/dev/null; then
+        return 0
+    fi
+    # Fallback to PID file check for manual starts
     if [[ -f "${PID_FILE}" ]]; then
         local pid
         pid=$(cat "${PID_FILE}" 2>/dev/null)
@@ -103,7 +108,10 @@ is_tunnel_running() {
 }
 
 get_pid() {
-    if [[ -f "${PID_FILE}" ]]; then
+    # Check systemd-managed gunicorn first
+    if systemctl is-active --quiet gunicorn.service 2>/dev/null; then
+        systemctl show gunicorn.service -p MainPID --value 2>/dev/null
+    elif [[ -f "${PID_FILE}" ]]; then
         cat "${PID_FILE}" 2>/dev/null
     else
         echo "N/A"
@@ -111,9 +119,9 @@ get_pid() {
 }
 
 get_worker_count() {
-    if is_app_running; then
-        local pid
-        pid=$(cat "${PID_FILE}" 2>/dev/null)
+    local pid
+    pid=$(get_pid)
+    if [[ -n "$pid" && "$pid" != "N/A" && "$pid" != "0" ]]; then
         pgrep -P "$pid" 2>/dev/null | wc -l
     else
         echo "0"

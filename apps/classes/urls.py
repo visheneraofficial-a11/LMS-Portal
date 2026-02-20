@@ -9,7 +9,7 @@ from classes.models import (
 )
 
 app_name = 'classes'
-P = [permissions.AllowAny]
+# P removed — using IsAuthenticated default from settings
 
 
 class YouTubeChannelSerializer(s.ModelSerializer):
@@ -38,7 +38,7 @@ class ClassWatchTimeSerializer(s.ModelSerializer):
 
 
 class RootView(APIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     def get(self, request):
         return Response({'success': True, 'data': {
             'endpoints': {
@@ -50,32 +50,32 @@ class RootView(APIView):
         }})
 
 class ScheduledClassList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = ScheduledClass.objects.all()
     serializer_class = ScheduledClassSerializer
 
 class ScheduledClassDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = ScheduledClass.objects.all()
     serializer_class = ScheduledClassSerializer
 
 class YouTubeChannelList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = YouTubeChannel.objects.all()
     serializer_class = YouTubeChannelSerializer
 
 class YouTubeChannelDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = YouTubeChannel.objects.all()
     serializer_class = YouTubeChannelSerializer
 
 class AccessTokenList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = ClassAccessToken.objects.all()
     serializer_class = ClassAccessTokenSerializer
 
 class WatchTimeList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = ClassWatchTime.objects.all()
     serializer_class = ClassWatchTimeSerializer
 

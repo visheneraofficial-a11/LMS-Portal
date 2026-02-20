@@ -9,7 +9,7 @@ from sessions_tracking.models import (
 )
 
 app_name = 'sessions_tracking'
-P = [permissions.AllowAny]
+# P removed — using IsAuthenticated default from settings
 
 
 class UserDeviceSerializer(s.ModelSerializer):
@@ -38,7 +38,7 @@ class UserActivitySerializer(s.ModelSerializer):
 
 
 class RootView(APIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     def get(self, request):
         return Response({'success': True, 'data': {
             'endpoints': {
@@ -50,27 +50,27 @@ class RootView(APIView):
         }})
 
 class SessionList(generics.ListAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = UserSession.objects.all()
     serializer_class = UserSessionSerializer
 
 class SessionDetail(generics.RetrieveDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = UserSession.objects.all()
     serializer_class = UserSessionSerializer
 
 class DeviceList(generics.ListAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = UserDevice.objects.all()
     serializer_class = UserDeviceSerializer
 
 class LoginHistoryList(generics.ListAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = LoginHistory.objects.all()
     serializer_class = LoginHistorySerializer
 
 class ActivityList(generics.ListAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = UserActivity.objects.all()
     serializer_class = UserActivitySerializer
 

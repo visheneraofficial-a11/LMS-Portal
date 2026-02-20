@@ -18,11 +18,11 @@ from rest_framework.response import Response
 
 app_name = 'academics'
 
-P = [permissions.AllowAny]
+# P removed — using IsAuthenticated default from settings
 
 
 class AcademicsRootView(APIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     def get(self, request):
         return Response({'success': True, 'data': {
             'endpoints': {
@@ -45,117 +45,117 @@ class AcademicsRootView(APIView):
 
 # Generic List/Create and Detail views
 class SessionList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = AcademicSession.objects.all()
     serializer_class = AcademicSessionSerializer
 
 class SessionDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = AcademicSession.objects.all()
     serializer_class = AcademicSessionSerializer
 
 class GroupList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
 
 class GroupDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
 
 class CategoryList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 class CategoryDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 class SubjectList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
 
 class SubjectDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
 
 class SectionList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = SubjectSection.objects.all()
     serializer_class = SubjectSectionSerializer
 
 class SectionDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = SubjectSection.objects.all()
     serializer_class = SubjectSectionSerializer
 
 class ChapterList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Chapter.objects.all()
     serializer_class = ChapterSerializer
 
 class ChapterDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Chapter.objects.all()
     serializer_class = ChapterSerializer
 
 class TopicList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
 
 class TopicDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
 
 class BatchList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Batch.objects.all()
     serializer_class = BatchSerializer
 
 class BatchDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Batch.objects.all()
     serializer_class = BatchSerializer
 
 class BatchStudentList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = BatchStudent.objects.all()
     serializer_class = BatchStudentSerializer
 
 class BatchTeacherList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = BatchTeacher.objects.all()
     serializer_class = BatchTeacherSerializer
 
 class LanguageList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Language.objects.all()
     serializer_class = LanguageSerializer
 
 class StateList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = State.objects.all()
     serializer_class = StateSerializer
 
 class CityList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = City.objects.all()
     serializer_class = CitySerializer
 
 class ReligionList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Religion.objects.all()
     serializer_class = ReligionSerializer
 
 class SchoolList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = School.objects.all()
     serializer_class = SchoolSerializer
 

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from tenants.models import Tenant
-from admin_utils import EnhancedModelAdmin, ImportExportMixin, export_as_csv, export_as_json, activate_selected, deactivate_selected, colored_status
+from core.admin_utils import EnhancedModelAdmin, ImportExportMixin, export_as_csv, export_as_json, activate_selected, deactivate_selected, colored_status
 
 
 @admin.register(Tenant)

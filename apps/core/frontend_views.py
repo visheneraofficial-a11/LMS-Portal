@@ -87,6 +87,9 @@ class LoginView(View):
     """Unified login page for all roles"""
     def get(self, request):
         role = request.GET.get('role', 'student')
+        # Map 'staff' to 'admin' for compatibility
+        if role == 'staff':
+            role = 'admin'
         if role not in ('student', 'teacher', 'admin'):
             role = 'student'
         tenants = Tenant.objects.all().order_by('name')
@@ -124,10 +127,17 @@ class LoginView(View):
 
         try:
             filters = {'email': email}
+            # Tenant auto-association: find user by email first
+            # If tenant_code is provided, validate it; otherwise auto-detect from user
+            user = Model.objects.filter(email=email).first()
+
             if tenant_code:
                 try:
                     tenant = Tenant.objects.get(code=tenant_code)
-                    filters['tenant'] = tenant
+                    # If tenant specified, verify user belongs to it
+                    tenant_user = Model.objects.filter(email=email, tenant=tenant).first()
+                    if tenant_user:
+                        user = tenant_user
                 except Tenant.DoesNotExist:
                     return render(request, 'accounts/login.html', {
                         'role': role,
@@ -137,7 +147,6 @@ class LoginView(View):
                         'tenants': tenants,
                     })
 
-            user = Model.objects.filter(**filters).first()
             if not user or not check_password(password, user.password_hash):
                 return render(request, 'accounts/login.html', {
                     'role': role,
@@ -147,6 +156,9 @@ class LoginView(View):
                     'tenants': tenants,
                 })
 
+            # Auto-associate tenant in session
+            tenant_id = str(user.tenant_id) if user.tenant_id else None
+
             # Generate JWT token
             from datetime import datetime, timedelta
             import uuid
@@ -154,7 +166,7 @@ class LoginView(View):
             payload = {
                 'user_id': str(user.id),
                 'user_type': user_type,
-                'tenant_id': str(user.tenant_id) if user.tenant_id else None,
+                'tenant_id': tenant_id,
                 'email': user.email,
                 'token_type': 'access',
                 'exp': now + timedelta(minutes=60),
@@ -192,6 +204,9 @@ class RegisterView(View):
     """Registration page"""
     def get(self, request):
         role = request.GET.get('role', 'student')
+        # Map 'staff' to 'admin' for compatibility
+        if role == 'staff':
+            role = 'admin'
         if role not in ('student', 'teacher', 'admin'):
             role = 'student'
         return render(request, 'accounts/register.html', {'role': role})

@@ -698,4 +698,271 @@
     });
   });
 
+  // ═══════════════════════════════════════════════════════════════════
+  // 12. INLINE DELETE CHECKBOX → STYLED BUTTON
+  // ═══════════════════════════════════════════════════════════════════
+  document.addEventListener('DOMContentLoaded', function() {
+    // Target all delete cells in inline groups (both existing and dynamically added)
+    function convertDeleteCheckboxes() {
+      var deleteCells = document.querySelectorAll('.inline-group td.delete');
+      if (!deleteCells.length) return;
+
+      deleteCells.forEach(function(td) {
+        // Skip if already converted
+        if (td.querySelector('.enf-delete-btn')) return;
+
+        var cb = td.querySelector('input[type="checkbox"]');
+        if (!cb) return;
+
+        // Hide original checkbox & label
+        cb.style.display = 'none';
+        var lbl = td.querySelector('label');
+        if (lbl) lbl.style.display = 'none';
+
+        // Create styled button
+        var btn = document.createElement('a');
+        btn.href = '#';
+        btn.className = 'enf-delete-btn';
+        btn.innerHTML = '✕ Remove';
+        btn.title = 'Mark for deletion (save to confirm)';
+
+        // If already checked (e.g. page reload), show active state
+        if (cb.checked) {
+          btn.classList.add('enf-delete-active');
+          btn.innerHTML = '↩ Undo';
+          var row = td.closest('tr');
+          if (row) row.style.opacity = '0.45';
+        }
+
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          cb.checked = !cb.checked;
+          cb.dispatchEvent(new Event('change', { bubbles: true }));
+          var row = td.closest('tr');
+          if (cb.checked) {
+            btn.classList.add('enf-delete-active');
+            btn.innerHTML = '↩ Undo';
+            if (row) row.style.opacity = '0.45';
+          } else {
+            btn.classList.remove('enf-delete-active');
+            btn.innerHTML = '✕ Remove';
+            if (row) row.style.opacity = '1';
+          }
+        });
+
+        td.appendChild(btn);
+      });
+    }
+
+    // Run immediately
+    convertDeleteCheckboxes();
+
+    // Also convert when new inline rows are added (Django "Add another" button)
+    var addButtons = document.querySelectorAll('.inline-group .add-row a, .inline-group .grp-add-handler');
+    addButtons.forEach(function(addBtn) {
+      addBtn.addEventListener('click', function() {
+        setTimeout(convertDeleteCheckboxes, 100);
+      });
+    });
+
+    // MutationObserver fallback for dynamically added rows
+    var inlineGroups = document.querySelectorAll('.inline-group');
+    inlineGroups.forEach(function(group) {
+      var observer = new MutationObserver(function() {
+        convertDeleteCheckboxes();
+      });
+      observer.observe(group, { childList: true, subtree: true });
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════════
+  // 13. INLINE TABLE COLUMN FILTERS
+  // ═══════════════════════════════════════════════════════════════════
+  document.addEventListener('DOMContentLoaded', function() {
+    var inlineTables = document.querySelectorAll('.inline-group table');
+    if (!inlineTables.length) return;
+
+    var filterSVG = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">'
+      + '<path d="M1.5 1.5h13L9.5 7.7V13l-3 1.5V7.7z"/></svg>';
+
+    inlineTables.forEach(function(table) {
+      var headerRow = table.querySelector('thead tr');
+      if (!headerRow) return;
+
+      var ths = headerRow.querySelectorAll('th');
+      var body = table.querySelector('tbody');
+      if (!body) return;
+
+      // Identify filterable columns (skip original, skip empty headers)
+      ths.forEach(function(th, colIdx) {
+        // Skip original column and columns with no text
+        if (th.classList.contains('original')) return;
+        var headerText = (th.textContent || '').trim();
+        if (!headerText || headerText.length < 2) return;
+
+        // Make th position relative for dropdown
+        th.style.position = 'relative';
+
+        // Add filter icon
+        var icon = document.createElement('span');
+        icon.className = 'enf-inline-filter-icon';
+        icon.innerHTML = filterSVG;
+        icon.title = 'Filter ' + headerText;
+        th.appendChild(icon);
+
+        var dropdown = null;
+        var activeFilter = null; // null = no filter
+
+        icon.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          // Close any other open filter dropdowns
+          document.querySelectorAll('.enf-inline-filter-dropdown').forEach(function(d) {
+            d.remove();
+          });
+          document.querySelectorAll('.enf-inline-filter-icon.enf-filter-active').forEach(function(ic) {
+            if (ic !== icon && !ic._hasFilter) ic.classList.remove('enf-filter-active');
+          });
+
+          // Collect unique values from this column
+          var values = [];
+          var seen = {};
+          var rows = body.querySelectorAll('tr.form-row');
+          rows.forEach(function(row) {
+            if (row.classList.contains('empty-form')) return;
+            var cells = row.querySelectorAll('td');
+            if (colIdx >= cells.length) return;
+            var cell = cells[colIdx];
+            // Skip original/hidden cells
+            if (cell.classList.contains('original')) return;
+
+            var val = '';
+            // For select/autocomplete fields, get selected option text
+            var sel = cell.querySelector('select');
+            if (sel && sel.selectedIndex >= 0) {
+              val = sel.options[sel.selectedIndex].text;
+            }
+            // For Select2 widgets
+            if (!val || val === '---------') {
+              var s2 = cell.querySelector('.select2-selection__rendered');
+              if (s2) val = s2.textContent || s2.innerText || '';
+            }
+            // For readonly/text content
+            if (!val || val === '---------') {
+              val = cell.textContent || cell.innerText || '';
+            }
+            val = val.trim();
+            if (val && val !== '---------' && !seen[val]) {
+              seen[val] = true;
+              values.push(val);
+            }
+          });
+
+          values.sort();
+
+          // Build dropdown
+          dropdown = document.createElement('div');
+          dropdown.className = 'enf-inline-filter-dropdown';
+
+          // Search input
+          var search = document.createElement('input');
+          search.type = 'text';
+          search.className = 'enf-inline-filter-search';
+          search.placeholder = 'Search…';
+          dropdown.appendChild(search);
+
+          // "All" option
+          var allItem = document.createElement('div');
+          allItem.className = 'enf-inline-filter-item' + (activeFilter === null ? ' enf-selected' : '');
+          allItem.textContent = '(All)';
+          allItem.addEventListener('click', function() {
+            activeFilter = null;
+            icon._hasFilter = false;
+            icon.classList.remove('enf-filter-active');
+            applyFilter(body, colIdx, null);
+            dropdown.remove();
+          });
+          dropdown.appendChild(allItem);
+
+          // Value items
+          values.forEach(function(v) {
+            var item = document.createElement('div');
+            item.className = 'enf-inline-filter-item' + (activeFilter === v ? ' enf-selected' : '');
+            item.textContent = v;
+            item.addEventListener('click', function() {
+              activeFilter = v;
+              icon._hasFilter = true;
+              icon.classList.add('enf-filter-active');
+              applyFilter(body, colIdx, v);
+              dropdown.remove();
+            });
+            dropdown.appendChild(item);
+          });
+
+          // Search filtering within dropdown
+          search.addEventListener('input', function() {
+            var q = search.value.toLowerCase();
+            dropdown.querySelectorAll('.enf-inline-filter-item').forEach(function(item) {
+              if (item.textContent === '(All)') {
+                item.style.display = '';
+              } else {
+                item.style.display = item.textContent.toLowerCase().indexOf(q) >= 0 ? '' : 'none';
+              }
+            });
+          });
+
+          th.appendChild(dropdown);
+
+          // Focus search
+          setTimeout(function() { search.focus(); }, 50);
+        });
+      });
+    });
+
+    function applyFilter(tbody, colIdx, filterVal) {
+      var rows = tbody.querySelectorAll('tr.form-row');
+      rows.forEach(function(row) {
+        if (row.classList.contains('empty-form')) return;
+        // Don't filter the "Add another" row
+        if (row.classList.contains('add-row')) return;
+
+        if (filterVal === null) {
+          row.style.display = '';
+          return;
+        }
+
+        var cells = row.querySelectorAll('td');
+        if (colIdx >= cells.length) return;
+        var cell = cells[colIdx];
+
+        var val = '';
+        var sel = cell.querySelector('select');
+        if (sel && sel.selectedIndex >= 0) {
+          val = sel.options[sel.selectedIndex].text;
+        }
+        if (!val || val === '---------') {
+          var s2 = cell.querySelector('.select2-selection__rendered');
+          if (s2) val = s2.textContent || s2.innerText || '';
+        }
+        if (!val || val === '---------') {
+          val = cell.textContent || cell.innerText || '';
+        }
+        val = val.trim();
+
+        row.style.display = (val === filterVal) ? '' : 'none';
+      });
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.enf-inline-filter-dropdown') && !e.target.closest('.enf-inline-filter-icon')) {
+        document.querySelectorAll('.enf-inline-filter-dropdown').forEach(function(d) {
+          d.remove();
+        });
+      }
+    });
+  });
+
 })();

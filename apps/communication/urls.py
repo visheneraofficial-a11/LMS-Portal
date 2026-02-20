@@ -10,7 +10,7 @@ from communication.models import (
 )
 
 app_name = 'communication'
-P = [permissions.AllowAny]
+# P removed — using IsAuthenticated default from settings
 
 
 class TicketSerializer(s.ModelSerializer):
@@ -45,7 +45,7 @@ class NotificationSerializer(s.ModelSerializer):
 
 
 class RootView(APIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     def get(self, request):
         return Response({'success': True, 'data': {
             'endpoints': {
@@ -57,38 +57,38 @@ class RootView(APIView):
         }})
 
 class TicketList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = SupportTicket.objects.all()
     serializer_class = TicketSerializer
 
 class TicketDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = SupportTicket.objects.all()
     serializer_class = TicketSerializer
 
 class TicketMessageList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     serializer_class = TicketMessageSerializer
     def get_queryset(self):
         return TicketMessage.objects.filter(ticket_id=self.kwargs['pk'])
 
 class AnnouncementList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Announcement.objects.all()
     serializer_class = AnnouncementSerializer
 
 class AnnouncementDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Announcement.objects.all()
     serializer_class = AnnouncementSerializer
 
 class MessageList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = DirectMessage.objects.all()
     serializer_class = DirectMessageSerializer
 
 class NotificationList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
 

@@ -4,8 +4,13 @@ from system_config.models import (
     SystemSetting, FeatureFlag, MFAPolicy,
     MaintenanceWindow, FounderInfo, EnquiryForm,
     AIFeatureConfig, ClassLinkConfig, AttendanceRule,
+    IntegrationConfig, WebsiteSetting, ReportTemplate,
+    WebsiteNews, Testimonial, FooterConfig,
 )
-from admin_utils import (
+from communication.models import (
+    Announcement, DirectMessage, Notification, SupportTicket, TicketMessage,
+)
+from core.admin_utils import (
     EnhancedModelAdmin, ImportExportMixin, export_as_csv,
     export_as_json, activate_selected, deactivate_selected, colored_status,
 )
@@ -418,3 +423,395 @@ class AttendanceRuleAdmin(EnhancedModelAdmin):
     def active_badge(self, obj):
         return colored_status(getattr(obj, 'is_active', False))
     active_badge.short_description = 'Active'
+
+
+# ─── Integration Config ──────────────────────────────────────────────
+@admin.register(IntegrationConfig)
+class IntegrationConfigAdmin(EnhancedModelAdmin):
+    list_display = ('name', 'type_badge', 'provider', 'health_badge', 'enabled_badge', 'rate_info', 'updated_at')
+    list_filter = ('integration_type', 'health_status', 'is_active')
+    search_fields = ('name', 'provider', 'integration_type')
+    readonly_fields = ('last_health_check', 'created_at', 'updated_at')
+    fieldsets = (
+        ('Integration Info', {
+            'fields': ('name', 'integration_type', 'provider', 'is_active', 'description')
+        }),
+        ('Authentication', {
+            'fields': ('api_key', 'api_secret', 'api_endpoint', 'oauth_client_id', 'oauth_client_secret', 'oauth_token', 'oauth_refresh_token', 'oauth_token_expiry'),
+            'classes': ('collapse',),
+        }),
+        ('LLM Configuration', {
+            'fields': ('model_name', 'max_tokens', 'temperature', 'system_prompt'),
+            'classes': ('collapse',),
+        }),
+        ('YouTube Configuration', {
+            'fields': ('channel_id', 'channel_name', 'playlist_ids', 'auto_sync_videos'),
+            'classes': ('collapse',),
+        }),
+        ('Rate Limiting & Budget', {
+            'fields': ('max_requests_per_hour', 'max_requests_per_user', 'daily_budget_limit', 'monthly_budget_limit'),
+            'classes': ('collapse',),
+        }),
+        ('Health & Status', {
+            'fields': ('health_status', 'last_health_check', 'created_at', 'updated_at'),
+        }),
+    )
+
+    def type_badge(self, obj):
+        colors = {
+            'LLM': '#8b5cf6', 'YOUTUBE': '#ef4444', 'ZOOM': '#2563eb',
+            'GOOGLE_MEET': '#16a34a', 'WHATSAPP': '#22c55e', 'SMS': '#f59e0b',
+            'EMAIL': '#6366f1', 'STORAGE': '#64748b', 'PAYMENT': '#ec4899',
+            'ANALYTICS': '#0891b2', 'CUSTOM': '#78716c',
+        }
+        c = colors.get(obj.integration_type, '#64748b')
+        return format_html('<span style="background:{};color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">{}</span>', c, obj.get_integration_type_display())
+    type_badge.short_description = 'Type'
+
+    def health_badge(self, obj):
+        colors = {'HEALTHY': '#22c55e', 'DEGRADED': '#f59e0b', 'DOWN': '#ef4444', 'UNKNOWN': '#64748b'}
+        c = colors.get(obj.health_status, '#64748b')
+        return format_html('<span style="color:{};font-weight:600;">{}</span>', c, obj.get_health_status_display())
+    health_badge.short_description = 'Health'
+
+    def enabled_badge(self, obj):
+        return colored_status(obj.is_active)
+    enabled_badge.short_description = 'Enabled'
+
+    def rate_info(self, obj):
+        return format_html('<span style="color:#64748b;font-size:11px;">{}/hr</span>', obj.max_requests_per_hour or '∞')
+    rate_info.short_description = 'Rate Limit'
+
+
+# ─── Website Setting ─────────────────────────────────────────────────
+@admin.register(WebsiteSetting)
+class WebsiteSettingAdmin(EnhancedModelAdmin):
+    list_display = ('setting_key', 'section_badge', 'value_preview', 'active_badge_ws', 'sort_order', 'updated_at')
+    list_filter = ('section', 'is_active')
+    search_fields = ('setting_key', 'setting_value', 'section')
+    list_editable = ('sort_order',)
+    ordering = ('section', 'sort_order')
+    fieldsets = (
+        ('Setting Info', {
+            'fields': ('section', 'setting_key', 'is_active', 'sort_order')
+        }),
+        ('Value', {
+            'fields': ('setting_value', 'setting_json', 'media_url')
+        }),
+        ('Timestamps', {
+            'fields': ('updated_at',),
+            'classes': ('collapse',),
+        }),
+    )
+    readonly_fields = ('updated_at',)
+
+    def section_badge(self, obj):
+        colors = {
+            'HERO': '#8b5cf6', 'ABOUT': '#2563eb', 'PROGRAMS': '#16a34a',
+            'TESTIMONIALS': '#f59e0b', 'FOOTER': '#64748b', 'SEO': '#0891b2',
+            'SOCIAL': '#ec4899', 'BRANDING': '#6366f1', 'CONTACT': '#ef4444', 'CUSTOM': '#78716c',
+        }
+        c = colors.get(obj.section, '#64748b')
+        return format_html('<span style="background:{};color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">{}</span>', c, obj.get_section_display())
+    section_badge.short_description = 'Section'
+
+    def value_preview(self, obj):
+        val = obj.setting_value or ''
+        if len(val) > 60:
+            val = val[:60] + '…'
+        return val or format_html('<span style="color:#94a3b8;">—</span>')
+    value_preview.short_description = 'Value'
+
+    def active_badge_ws(self, obj):
+        return colored_status(obj.is_active)
+    active_badge_ws.short_description = 'Active'
+
+
+# ─── Report Template ──────────────────────────────────────────────────
+@admin.register(ReportTemplate)
+class ReportTemplateAdmin(EnhancedModelAdmin):
+    list_display = ('name', 'type_badge_rpt', 'format_badge', 'schedule_badge', 'active_badge_rpt', 'created_by', 'updated_at')
+    list_filter = ('report_type', 'default_format', 'is_scheduled', 'is_active')
+    search_fields = ('name', 'description', 'report_type')
+    readonly_fields = ('created_at', 'updated_at')
+    fieldsets = (
+        ('Report Info', {
+            'fields': ('name', 'description', 'report_type', 'is_active')
+        }),
+        ('Configuration', {
+            'fields': ('filters_json', 'columns_json', 'group_by', 'sort_by', 'default_format')
+        }),
+        ('Scheduling', {
+            'fields': ('is_scheduled', 'schedule_cron', 'recipients_email'),
+            'classes': ('collapse',),
+        }),
+        ('Meta', {
+            'fields': ('created_by', 'created_at', 'updated_at'),
+            'classes': ('collapse',),
+        }),
+    )
+
+    def type_badge_rpt(self, obj):
+        colors = {
+            'STUDENT': '#8b5cf6', 'TEACHER': '#2563eb', 'ATTENDANCE': '#f59e0b',
+            'EXAM': '#ef4444', 'CENTER': '#16a34a', 'FINANCIAL': '#ec4899', 'COMBINED': '#0891b2',
+        }
+        c = colors.get(obj.report_type, '#64748b')
+        return format_html('<span style="background:{};color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">{}</span>', c, obj.get_report_type_display())
+    type_badge_rpt.short_description = 'Type'
+
+    def format_badge(self, obj):
+        icons = {'CSV': '📄', 'EXCEL': '📊', 'PDF': '📕', 'JSON': '📋'}
+        return format_html('{} {}', icons.get(obj.default_format, '📄'), obj.get_default_format_display())
+    format_badge.short_description = 'Format'
+
+    def schedule_badge(self, obj):
+        if obj.is_scheduled:
+            return format_html('<span style="color:#22c55e;font-weight:600;">⏰ {}</span>', obj.schedule_cron or 'Scheduled')
+        return format_html('<span style="color:#64748b;">Manual</span>')
+    schedule_badge.short_description = 'Schedule'
+
+    def active_badge_rpt(self, obj):
+        return colored_status(obj.is_active)
+    active_badge_rpt.short_description = 'Active'
+
+
+# ═══════════════════════════════════════════════════════════════════
+# WEBSITE NEWS
+# ═══════════════════════════════════════════════════════════════════
+@admin.register(WebsiteNews)
+class WebsiteNewsAdmin(EnhancedModelAdmin):
+    list_display = ('title', 'news_type_badge', 'priority_badge', 'homepage_badge', 'is_published', 'publish_date')
+    list_filter = ('news_type', 'priority', 'is_published', 'show_on_homepage', 'show_as_banner')
+    search_fields = ('title', 'summary', 'content')
+    date_hierarchy = 'publish_date'
+    prepopulated_fields = {'slug': ('title',)}
+    actions = [export_as_csv, activate_selected, deactivate_selected]
+    list_editable = ('is_published',)
+
+    def news_type_badge(self, obj):
+        colors = {'ANNOUNCEMENT': '#8b5cf6', 'NEWS': '#2563eb', 'EVENT': '#16a34a', 'ALERT': '#ef4444', 'UPDATE': '#f59e0b'}
+        c = colors.get(obj.news_type, '#64748b')
+        return format_html('<span style="background:{};color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">{}</span>', c, obj.get_news_type_display())
+    news_type_badge.short_description = 'Type'
+
+    def priority_badge(self, obj):
+        colors = {'LOW': '#94a3b8', 'NORMAL': '#2563eb', 'HIGH': '#f59e0b', 'URGENT': '#ef4444'}
+        c = colors.get(obj.priority, '#64748b')
+        return format_html('<span style="color:{};font-weight:600;">{}</span>', c, obj.get_priority_display())
+    priority_badge.short_description = 'Priority'
+
+    def homepage_badge(self, obj):
+        if obj.show_on_homepage:
+            return format_html('<span style="color:#22c55e;">🏠 Yes</span>')
+        return format_html('<span style="color:#94a3b8;">No</span>')
+    homepage_badge.short_description = 'Homepage'
+
+    def published_badge(self, obj):
+        return colored_status(obj.is_published)
+    published_badge.short_description = 'Published'
+    published_badge.admin_order_field = 'is_published'
+
+
+# ═══════════════════════════════════════════════════════════════════
+# TESTIMONIALS
+# ═══════════════════════════════════════════════════════════════════
+@admin.register(Testimonial)
+class TestimonialAdmin(EnhancedModelAdmin):
+    list_display = ('author_name', 'type_badge', 'rating_stars', 'achievement', 'is_featured', 'is_published')
+    list_filter = ('author_type', 'is_featured', 'is_published', 'rating')
+    search_fields = ('author_name', 'content', 'achievement')
+    list_editable = ('is_featured', 'is_published')
+    actions = [export_as_csv]
+
+    def type_badge(self, obj):
+        icons = {'STUDENT': '🎓', 'PARENT': '👨‍👩‍👧', 'TEACHER': '👨‍🏫', 'ALUMNI': '🎖️', 'OTHER': '👤'}
+        return format_html('{} {}', icons.get(obj.author_type, '👤'), obj.get_author_type_display())
+    type_badge.short_description = 'Type'
+
+    def rating_stars(self, obj):
+        return format_html('<span style="color:#f59e0b;">{}</span>', '★' * obj.rating + '☆' * (5 - obj.rating))
+    rating_stars.short_description = 'Rating'
+
+    def featured_badge(self, obj):
+        if obj.is_featured:
+            return format_html('<span style="color:#f59e0b;font-weight:600;">⭐ Featured</span>')
+        return format_html('<span style="color:#94a3b8;">—</span>')
+    featured_badge.short_description = 'Featured'
+
+    def published_badge(self, obj):
+        return colored_status(obj.is_published)
+    published_badge.short_description = 'Published'
+
+
+# ═══════════════════════════════════════════════════════════════════
+# FOOTER CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════
+@admin.register(FooterConfig)
+class FooterConfigAdmin(EnhancedModelAdmin):
+    list_display = ('section_title', 'section_badge', 'sort_order', 'active_badge_fc')
+    list_filter = ('section', 'is_active')
+    search_fields = ('section_title',)
+    list_editable = ('sort_order',)
+    actions = [export_as_csv, activate_selected, deactivate_selected]
+
+    def section_badge(self, obj):
+        icons = {'QUICK_LINKS': '🔗', 'RESOURCES': '📚', 'CONTACT': '📞', 'SOCIAL': '📱', 'LEGAL': '⚖️', 'NEWSLETTER': '📧', 'CUSTOM': '⚙️'}
+        return format_html('{} {}', icons.get(obj.section, '📄'), obj.get_section_display())
+    section_badge.short_description = 'Section'
+
+    def active_badge_fc(self, obj):
+        return colored_status(obj.is_active)
+    active_badge_fc.short_description = 'Active'
+
+
+# ═══════════════════════════════════════════════════════════════════
+# COMMUNICATION MODELS (Moved from Communication app)
+# ═══════════════════════════════════════════════════════════════════
+
+# Unregister from communication app first (if registered)
+try:
+    admin.site.unregister(Announcement)
+except admin.sites.NotRegistered:
+    pass
+try:
+    admin.site.unregister(DirectMessage)
+except admin.sites.NotRegistered:
+    pass
+try:
+    admin.site.unregister(Notification)
+except admin.sites.NotRegistered:
+    pass
+try:
+    admin.site.unregister(SupportTicket)
+except admin.sites.NotRegistered:
+    pass
+try:
+    admin.site.unregister(TicketMessage)
+except admin.sites.NotRegistered:
+    pass
+
+
+@admin.register(Announcement)
+class AnnouncementAdminSC(EnhancedModelAdmin):
+    list_display = ('title', 'type_badge_ann', 'target_badge', 'published_badge_ann', 'created_at')
+    list_filter = ('announcement_type', 'target_audience', 'is_published')
+    search_fields = ('title', 'content')
+    date_hierarchy = 'created_at'
+    actions = [export_as_csv, activate_selected, deactivate_selected]
+
+    def type_badge_ann(self, obj):
+        colors = {'GENERAL': '#64748b', 'ACADEMIC': '#2563eb', 'EXAM': '#ef4444', 'EVENT': '#16a34a', 'MAINTENANCE': '#f59e0b', 'URGENT': '#dc2626'}
+        c = colors.get(getattr(obj, 'announcement_type', 'GENERAL'), '#64748b')
+        return format_html('<span style="color:{};font-weight:600;">{}</span>', c, obj.get_announcement_type_display())
+    type_badge_ann.short_description = 'Type'
+
+    def target_badge(self, obj):
+        return format_html('<span style="color:#8b5cf6;">{}</span>', obj.get_target_audience_display())
+    target_badge.short_description = 'Target'
+
+    def published_badge_ann(self, obj):
+        return colored_status(getattr(obj, 'is_published', False))
+    published_badge_ann.short_description = 'Published'
+
+
+@admin.register(DirectMessage)
+class DirectMessageAdminSC(EnhancedModelAdmin):
+    list_display = ('subject_preview', 'sender_display', 'recipient_display', 'read_badge', 'created_at')
+    list_filter = ('is_read',)
+    search_fields = ('subject', 'message')
+    date_hierarchy = 'created_at'
+    actions = [export_as_csv]
+
+    def subject_preview(self, obj):
+        return format_html('<span style="font-weight:500;">{}</span>', (obj.subject or 'No Subject')[:50])
+    subject_preview.short_description = 'Subject'
+
+    def sender_display(self, obj):
+        return getattr(obj, 'sender_id', '-')
+    sender_display.short_description = 'Sender'
+
+    def recipient_display(self, obj):
+        return getattr(obj, 'recipient_id', '-')
+    recipient_display.short_description = 'Recipient'
+
+    def read_badge(self, obj):
+        if getattr(obj, 'is_read', False):
+            return format_html('<span style="color:#22c55e;">✓ Read</span>')
+        return format_html('<span style="color:#f59e0b;">● Unread</span>')
+    read_badge.short_description = 'Status'
+
+
+@admin.register(Notification)
+class NotificationAdminSC(EnhancedModelAdmin):
+    list_display = ('title', 'type_badge_notif', 'user_display', 'read_badge_notif', 'created_at')
+    list_filter = ('notification_type', 'is_read')
+    search_fields = ('title', 'message')
+    date_hierarchy = 'created_at'
+    actions = [export_as_csv]
+
+    def type_badge_notif(self, obj):
+        return format_html('<span style="background:#e0e7ff;color:#4f46e5;padding:2px 6px;border-radius:4px;font-size:11px;">{}</span>', getattr(obj, 'notification_type', '-'))
+    type_badge_notif.short_description = 'Type'
+
+    def user_display(self, obj):
+        return getattr(obj, 'user_id', '-')
+    user_display.short_description = 'User'
+
+    def read_badge_notif(self, obj):
+        if getattr(obj, 'is_read', False):
+            return format_html('<span style="color:#22c55e;">✓</span>')
+        return format_html('<span style="color:#f59e0b;">●</span>')
+    read_badge_notif.short_description = 'Read'
+
+
+@admin.register(SupportTicket)
+class SupportTicketAdminSC(EnhancedModelAdmin):
+    list_display = ('ticket_number', 'title', 'status_badge_tk', 'priority_badge_tk', 'submitted_by_name', 'created_at')
+    list_filter = ('status', 'priority', 'category')
+    search_fields = ('ticket_number', 'title', 'description')
+    date_hierarchy = 'created_at'
+    actions = [export_as_csv]
+
+    def status_badge_tk(self, obj):
+        colors = {'OPEN': '#22c55e', 'IN_PROGRESS': '#f59e0b', 'RESOLVED': '#2563eb', 'CLOSED': '#64748b'}
+        c = colors.get(getattr(obj, 'status', ''), '#64748b')
+        return format_html('<span style="background:{};color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;">{}</span>', c, getattr(obj, 'status', '-'))
+    status_badge_tk.short_description = 'Status'
+
+    def priority_badge_tk(self, obj):
+        colors = {'LOW': '#94a3b8', 'MEDIUM': '#2563eb', 'HIGH': '#f59e0b', 'CRITICAL': '#ef4444'}
+        c = colors.get(getattr(obj, 'priority', ''), '#64748b')
+        return format_html('<span style="color:{};font-weight:600;">{}</span>', c, getattr(obj, 'priority', '-'))
+    priority_badge_tk.short_description = 'Priority'
+
+
+@admin.register(TicketMessage)
+class TicketMessageAdminSC(EnhancedModelAdmin):
+    list_display = ('ticket_display', 'message_preview', 'sender_display_tm', 'is_internal_note', 'created_at')
+    list_filter = ('is_internal_note',)
+    search_fields = ('message',)
+    date_hierarchy = 'created_at'
+    actions = [export_as_csv]
+
+    def ticket_display(self, obj):
+        return getattr(obj.ticket, 'ticket_number', '-') if hasattr(obj, 'ticket') else '-'
+    ticket_display.short_description = 'Ticket'
+
+    def message_preview(self, obj):
+        return (obj.message or '')[:60] + '...' if len(obj.message or '') > 60 else (obj.message or '-')
+    message_preview.short_description = 'Message'
+
+    def sender_display_tm(self, obj):
+        return getattr(obj, 'sender_id', '-')
+    sender_display_tm.short_description = 'Sender'
+
+
+# ═══════════════════════════════════════════════════════════════════
+# UNREGISTER ITEMS THAT ARE NOW PART OF WEBSITE SETTINGS
+# ═══════════════════════════════════════════════════════════════════
+# FounderInfo is now managed through Website Settings → Founders & Team section
+try:
+    admin.site.unregister(FounderInfo)
+except admin.sites.NotRegistered:
+    pass

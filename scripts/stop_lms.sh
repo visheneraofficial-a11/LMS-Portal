@@ -12,9 +12,9 @@ echo "=========================================="
 
 # Stop Celery
 echo "[1/5] Stopping Celery..."
-if command -v systemctl &> /dev/null && [ -f /etc/systemd/system/lms-celery-worker.service ]; then
-    sudo systemctl stop lms-celery-beat 2>/dev/null || true
-    sudo systemctl stop lms-celery-worker 2>/dev/null || true
+if command -v systemctl &> /dev/null && [ -f /etc/systemd/system/celery-worker.service ]; then
+    sudo systemctl stop celery-beat 2>/dev/null || true
+    sudo systemctl stop celery-worker 2>/dev/null || true
 else
     if [ -f /u01/app/django/run/celery-beat.pid ]; then
         kill $(cat /u01/app/django/run/celery-beat.pid) 2>/dev/null || true
@@ -29,8 +29,8 @@ fi
 
 # Stop Daphne
 echo "[2/5] Stopping Daphne..."
-if command -v systemctl &> /dev/null && [ -f /etc/systemd/system/lms-daphne.service ]; then
-    sudo systemctl stop lms-daphne 2>/dev/null || true
+if command -v systemctl &> /dev/null && [ -f /etc/systemd/system/daphne.service ]; then
+    sudo systemctl stop daphne 2>/dev/null || true
 else
     if [ -f /u01/app/django/run/daphne.pid ]; then
         kill $(cat /u01/app/django/run/daphne.pid) 2>/dev/null || true
@@ -41,8 +41,8 @@ fi
 
 # Stop Gunicorn
 echo "[3/5] Stopping Gunicorn..."
-if command -v systemctl &> /dev/null && [ -f /etc/systemd/system/lms-gunicorn.service ]; then
-    sudo systemctl stop lms-gunicorn 2>/dev/null || true
+if command -v systemctl &> /dev/null && [ -f /etc/systemd/system/gunicorn.service ]; then
+    sudo systemctl stop gunicorn 2>/dev/null || true
 else
     if [ -f /u01/app/django/run/gunicorn.pid ]; then
         kill $(cat /u01/app/django/run/gunicorn.pid) 2>/dev/null || true
@@ -57,7 +57,8 @@ echo "[4/5] Redis - keeping running (shared service)"
 
 # Stop PostgreSQL (optional - usually kept running)
 echo "[5/5] PostgreSQL - keeping running (shared service)"
-# Uncomment to stop: sudo systemctl stop postgresql-18 2>/dev/null || true
+# PostgreSQL paths: /d01/postgres/18 (data, log, run, wal, archive)
+# Uncomment to stop: sudo systemctl stop postgres.service 2>/dev/null || true
 
 echo ""
 echo "=========================================="

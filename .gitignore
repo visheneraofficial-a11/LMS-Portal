@@ -51,7 +51,27 @@ media/
 
 # Backup
 backup/
+backups/
+apps/backups/
 
 # Environment
 .env
 .env.*
+
+# Exports & archives
+export/
+lms-new-setup.zip
+remediation_scripts.tar.gz
+remediation_scripts/
+file_Issuess-sevfix/
+
+# Bak files
+*.bak_remediation
+*.bak
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+run/

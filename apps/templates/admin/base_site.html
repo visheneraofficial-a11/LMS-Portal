@@ -20,6 +20,9 @@
 {% block usertools %}
 <div id="user-tools">
   <span id="enf-header-clock"><i class="fas fa-clock" style="font-size:0.72rem;"></i> <span id="enf-header-clock-text"></span></span>
+  <a href="{% url 'admin:index' %}" class="enf-header-link" title="Go to Home">
+    <i class="fas fa-home"></i> Home
+  </a>
   <a href="/" class="enf-header-link" title="Go to website">
     <i class="fas fa-globe"></i> Website
   </a>
@@ -103,14 +106,9 @@
 {% endblock %}
 
 {% block footer %}
-<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-  <div>
-    <span style="color:#844FC1;">&#9670;</span>
-    <strong style="color:#844FC1;">ENF Online Class</strong>
-    <span style="color:var(--text-muted);">— Admin Console v4.0</span>
-  </div>
+<div style="display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:12px;">
   <div style="display:flex;align-items:center;gap:16px;">
-    <span style="color:var(--text-muted);font-size:0.75rem;">Powered by Django {{ django_version }}</span>
+    <span style="color:var(--text-muted);font-size:0.75rem;">Powered by Django</span>
   </div>
 </div>
 <script>

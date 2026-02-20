@@ -9,7 +9,7 @@ from materials.models import (
 )
 
 app_name = 'materials'
-P = [permissions.AllowAny]
+# P removed — using IsAuthenticated default from settings
 
 
 class StudyMaterialSerializer(s.ModelSerializer):
@@ -44,7 +44,7 @@ class TopperStudentSerializer(s.ModelSerializer):
 
 
 class RootView(APIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     def get(self, request):
         return Response({'success': True, 'data': {
             'endpoints': {
@@ -56,27 +56,27 @@ class RootView(APIView):
         }})
 
 class MaterialList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = StudyMaterial.objects.all()
     serializer_class = StudyMaterialSerializer
 
 class MaterialDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = StudyMaterial.objects.all()
     serializer_class = StudyMaterialSerializer
 
 class GalleryList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = PhotoGallery.objects.all()
     serializer_class = PhotoGallerySerializer
 
 class ScholarshipList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = Scholarship.objects.all()
     serializer_class = ScholarshipSerializer
 
 class TopperList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = TopperStudent.objects.all()
     serializer_class = TopperStudentSerializer
 

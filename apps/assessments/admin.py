@@ -4,7 +4,7 @@ from assessments.models import (
     Test, TestSection, Question, TestAttempt,
     TestAttemptAnswer, TestFeedback, OfflineTestMarks
 )
-from admin_utils import EnhancedModelAdmin, ImportExportMixin, export_as_csv, export_as_json, activate_selected, deactivate_selected, colored_status
+from core.admin_utils import EnhancedModelAdmin, ImportExportMixin, export_as_csv, export_as_json, activate_selected, deactivate_selected, colored_status
 
 
 class TestSectionInline(admin.TabularInline):
@@ -102,7 +102,7 @@ class TestAttemptAdmin(EnhancedModelAdmin):
 
     def score_display(self, obj):
         return format_html(
-            '<span style="font-weight:700;color:#e2e8f0;">{}</span>',
+            '<span style="font-weight:700;color:#1e293b;">{}</span>',
             getattr(obj, 'raw_score', '-')
         )
     score_display.short_description = 'Score'

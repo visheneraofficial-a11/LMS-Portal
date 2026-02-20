@@ -7,7 +7,7 @@ from rest_framework import serializers as s
 from audit.models import AuditLog, AuditPurgePolicy, BackupPolicy, BackupHistory
 
 app_name = 'audit'
-P = [permissions.AllowAny]
+# P removed — using IsAuthenticated default from settings
 
 
 class AuditLogSerializer(s.ModelSerializer):
@@ -36,7 +36,7 @@ class BackupHistorySerializer(s.ModelSerializer):
 
 
 class RootView(APIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     def get(self, request):
         return Response({'success': True, 'data': {
             'endpoints': {
@@ -48,27 +48,27 @@ class RootView(APIView):
         }})
 
 class AuditLogList(generics.ListAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = AuditLog.objects.all()
     serializer_class = AuditLogSerializer
 
 class AuditLogDetail(generics.RetrieveAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = AuditLog.objects.all()
     serializer_class = AuditLogSerializer
 
 class PurgePolicyList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = AuditPurgePolicy.objects.all()
     serializer_class = PurgePolicySerializer
 
 class BackupPolicyList(generics.ListCreateAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = BackupPolicy.objects.all()
     serializer_class = BackupPolicySerializer
 
 class BackupHistoryList(generics.ListAPIView):
-    permission_classes = P
+    # permission_classes uses IsAuthenticated default from settings
     queryset = BackupHistory.objects.all()
     serializer_class = BackupHistorySerializer
 

@@ -1029,3 +1029,571 @@ class NotificationsView(View):
             ctx['unread_count'] = 0
 
         return render(request, 'dashboards/admin_notifications.html', ctx)
+
+
+# ═══════════════════════════════════════════════════════════════
+# 24. STAFF ROLES MANAGEMENT
+# ═══════════════════════════════════════════════════════════════
+class StaffRolesView(View):
+    def get(self, request):
+        auth = _require_admin(request)
+        if auth:
+            return auth
+        ctx = _admin_ctx(request, 'staff_roles', 'Staff Roles & Permissions')
+
+        from accounts.models import StaffRole
+
+        roles = StaffRole.objects.all().order_by('level', 'name')
+        role_list = []
+        perm_fields = [
+            'can_manage_students', 'can_manage_teachers', 'can_manage_exams',
+            'can_manage_attendance', 'can_manage_content', 'can_manage_finance',
+            'can_manage_settings', 'can_manage_integrations', 'can_view_reports',
+            'can_export_data', 'can_manage_roles', 'can_view_audit',
+            'can_manage_website', 'can_manage_ai',
+        ]
+        for r in roles:
+            granted = [f.replace('can_', '').replace('_', ' ').title() for f in perm_fields if getattr(r, f, False)]
+            role_list.append({
+                'id': str(r.id),
+                'name': r.name,
+                'level': r.level,
+                'level_label': r.get_level_display(),
+                'description': r.description or '',
+                'permissions_count': len(granted),
+                'permissions': granted,
+                'staff_count': r.staff_admins.count(),
+                'is_active': r.is_active,
+                'created': r.created_at.strftime('%d %b %Y') if r.created_at else '',
+            })
+
+        # Staff assignments
+        admins = Admin.objects.select_related('staff_role').all()
+        staff_list = []
+        for a in admins:
+            staff_list.append({
+                'id': str(a.id),
+                'name': f'{a.first_name} {a.last_name}'.strip() or a.email,
+                'email': a.email,
+                'role_name': a.staff_role.name if a.staff_role else 'Unassigned',
+                'role_level': a.staff_role.level if a.staff_role else '',
+                'status': a.status,
+            })
+
+        ctx.update({
+            'roles': role_list,
+            'staff_list': staff_list,
+            'total_roles': len(role_list),
+            'level_counts': {
+                'super_admin': sum(1 for r in role_list if r['level'] == 'SUPER_ADMIN'),
+                'admin': sum(1 for r in role_list if r['level'] == 'ADMIN'),
+                'operator': sum(1 for r in role_list if r['level'] == 'OPERATOR'),
+            },
+        })
+        return render(request, 'dashboards/admin_staff_roles.html', ctx)
+
+
+# ═══════════════════════════════════════════════════════════════
+# 25. INTEGRATIONS / CONFIGURATION
+# ═══════════════════════════════════════════════════════════════
+class IntegrationsView(View):
+    def get(self, request):
+        auth = _require_admin(request)
+        if auth:
+            return auth
+        ctx = _admin_ctx(request, 'integrations', 'Integrations & Configuration')
+
+        from system_config.models import IntegrationConfig
+
+        configs = IntegrationConfig.objects.all().order_by('integration_type', 'name')
+        integrations = []
+        for c in configs:
+            integrations.append({
+                'id': str(c.id),
+                'name': c.name,
+                'type': c.integration_type,
+                'type_label': c.get_integration_type_display(),
+                'provider': c.provider or '',
+                'is_active': c.is_active,
+                'health': c.health_status,
+                'health_label': c.get_health_status_display(),
+                'endpoint': c.api_endpoint or '',
+                'model_name': c.model_name or '',
+                'max_tokens': c.max_tokens,
+                'temperature': float(c.temperature) if c.temperature else 0.7,
+                'rate_limit': c.max_requests_per_hour or 0,
+                'daily_budget': float(c.daily_budget_limit) if c.daily_budget_limit else 0,
+                'monthly_budget': float(c.monthly_budget_limit) if c.monthly_budget_limit else 0,
+                'channel_name': c.channel_name or '',
+                'auto_sync': c.auto_sync_videos,
+                'updated': c.updated_at.strftime('%d %b %Y %H:%M') if c.updated_at else '',
+            })
+
+        # Group by type
+        type_groups = {}
+        for i in integrations:
+            tg = type_groups.setdefault(i['type_label'], [])
+            tg.append(i)
+
+        ctx.update({
+            'integrations': integrations,
+            'type_groups': type_groups,
+            'total_integrations': len(integrations),
+            'enabled_count': sum(1 for i in integrations if i['is_active']),
+            'healthy_count': sum(1 for i in integrations if i['health'] == 'HEALTHY'),
+            'degraded_count': sum(1 for i in integrations if i['health'] == 'DEGRADED'),
+            'down_count': sum(1 for i in integrations if i['health'] == 'DOWN'),
+        })
+        return render(request, 'dashboards/admin_integrations.html', ctx)
+
+
+# ═══════════════════════════════════════════════════════════════
+# 26. REPORTS CENTER
+# ═══════════════════════════════════════════════════════════════
+class ReportsView(View):
+    def get(self, request):
+        auth = _require_admin(request)
+        if auth:
+            return auth
+        ctx = _admin_ctx(request, 'reports', 'Reports Center')
+
+        from system_config.models import ReportTemplate
+        from assessments.models import Test, TestAttempt
+        from attendance.models import AttendanceRecord
+
+        # Report templates
+        templates = ReportTemplate.objects.filter(is_active=True).order_by('report_type', 'name')
+        template_list = []
+        for t in templates:
+            template_list.append({
+                'id': str(t.id),
+                'name': t.name,
+                'type': t.report_type,
+                'type_label': t.get_report_type_display(),
+                'format': t.default_format,
+                'format_label': t.get_default_format_display(),
+                'is_scheduled': t.is_scheduled,
+                'schedule': t.schedule_cron or '',
+                'description': t.description or '',
+            })
+
+        now = timezone.now()
+        today = now.date()
+
+        # Quick stats for report dashboard
+        ctx.update({
+            'templates': template_list,
+            'total_templates': len(template_list),
+            'total_students': Student.objects.count(),
+            'total_teachers': Teacher.objects.count(),
+            'total_tests': Test.objects.count(),
+            'total_attempts': TestAttempt.objects.count(),
+            'total_attendance': AttendanceRecord.objects.count(),
+            'today_attendance': AttendanceRecord.objects.filter(date=today).count(),
+            'report_types': [
+                {'value': 'STUDENT', 'label': 'Student Report', 'icon': 'fa-user-graduate', 'color': '#8b5cf6'},
+                {'value': 'TEACHER', 'label': 'Teacher Report', 'icon': 'fa-chalkboard-teacher', 'color': '#2563eb'},
+                {'value': 'ATTENDANCE', 'label': 'Attendance Report', 'icon': 'fa-calendar-check', 'color': '#f59e0b'},
+                {'value': 'EXAM', 'label': 'Exam Report', 'icon': 'fa-file-alt', 'color': '#ef4444'},
+                {'value': 'CENTER', 'label': 'Center Report', 'icon': 'fa-building', 'color': '#16a34a'},
+                {'value': 'FINANCIAL', 'label': 'Financial Report', 'icon': 'fa-rupee-sign', 'color': '#ec4899'},
+                {'value': 'COMBINED', 'label': 'Combined Report', 'icon': 'fa-layer-group', 'color': '#0891b2'},
+            ],
+        })
+        return render(request, 'dashboards/admin_reports.html', ctx)
+
+
+# ═══════════════════════════════════════════════════════════════
+# 27. WEBSITE SETTINGS
+# ═══════════════════════════════════════════════════════════════
+class WebsiteSettingsView(View):
+    def get(self, request):
+        auth = _require_admin(request)
+        if auth:
+            return auth
+        ctx = _admin_ctx(request, 'website_settings', 'Website & Frontend Settings')
+
+        from system_config.models import WebsiteSetting
+
+        settings_qs = WebsiteSetting.objects.filter(is_active=True).order_by('section', 'sort_order')
+        sections = {}
+        for s in settings_qs:
+            section_label = s.get_section_display()
+            sec = sections.setdefault(s.section, {
+                'label': section_label,
+                'key': s.section,
+                'items': [],
+            })
+            sec['items'].append({
+                'id': str(s.id),
+                'key': s.setting_key,
+                'value': s.setting_value or '',
+                'json': s.setting_json,
+                'media_url': s.media_url or '',
+                'order': s.sort_order,
+            })
+
+        section_meta = {
+            'HERO': {'icon': 'fa-desktop', 'color': '#8b5cf6', 'desc': 'Hero banner, headline, CTA'},
+            'ABOUT': {'icon': 'fa-info-circle', 'color': '#2563eb', 'desc': 'About us section'},
+            'PROGRAMS': {'icon': 'fa-graduation-cap', 'color': '#16a34a', 'desc': 'Programs & courses listing'},
+            'TESTIMONIALS': {'icon': 'fa-quote-left', 'color': '#f59e0b', 'desc': 'Student testimonials'},
+            'FOOTER': {'icon': 'fa-shoe-prints', 'color': '#64748b', 'desc': 'Footer links & info'},
+            'SEO': {'icon': 'fa-search', 'color': '#0891b2', 'desc': 'SEO meta tags, titles'},
+            'SOCIAL': {'icon': 'fa-share-alt', 'color': '#ec4899', 'desc': 'Social media links'},
+            'BRANDING': {'icon': 'fa-palette', 'color': '#6366f1', 'desc': 'Logo, brand colors, fonts'},
+            'CONTACT': {'icon': 'fa-envelope', 'color': '#ef4444', 'desc': 'Contact info & form'},
+            'CUSTOM': {'icon': 'fa-cog', 'color': '#78716c', 'desc': 'Custom sections'},
+        }
+
+        ctx.update({
+            'sections': sections,
+            'section_meta': section_meta,
+            'total_settings': settings_qs.count(),
+            'active_sections': len(sections),
+        })
+        return render(request, 'dashboards/admin_website_settings.html', ctx)
+
+
+# ═══════════════════════════════════════════════════════════════
+# 28. EXAM MANAGEMENT (auto-grading hub)
+# ═══════════════════════════════════════════════════════════════
+class ExamManagementView(View):
+    def get(self, request):
+        auth = _require_admin(request)
+        if auth:
+            return auth
+        ctx = _admin_ctx(request, 'exam_management', 'Exam Management & Auto-Grading')
+
+        from assessments.models import Test, TestAttempt, Question
+
+        now = timezone.now()
+        today = now.date()
+
+        tests = Test.objects.all().order_by('-created_at')[:50]
+        test_list = []
+        for t in tests:
+            q_count = Question.objects.filter(test_section__test=t).count()
+            attempt_count = TestAttempt.objects.filter(test=t).count()
+            evaluated = TestAttempt.objects.filter(test=t, status='EVALUATED').count()
+            pending = TestAttempt.objects.filter(test=t, status='SUBMITTED').count()
+            pass_count = TestAttempt.objects.filter(test=t, result='PASS').count()
+            avg_score = TestAttempt.objects.filter(test=t, status='EVALUATED').aggregate(
+                avg=Avg('percentage'))['avg']
+
+            test_list.append({
+                'id': str(t.id),
+                'title': t.title,
+                'test_type': t.test_type,
+                'status': t.status,
+                'total_marks': t.total_marks,
+                'passing_marks': t.passing_marks,
+                'duration': t.duration_minutes,
+                'questions': q_count,
+                'attempts': attempt_count,
+                'evaluated': evaluated,
+                'pending_eval': pending,
+                'pass_count': pass_count,
+                'pass_rate': round(pass_count / attempt_count * 100, 1) if attempt_count else 0,
+                'avg_score': round(avg_score, 1) if avg_score else 0,
+                'start_time': t.start_time.strftime('%d %b %Y %H:%M') if t.start_time else '',
+                'end_time': t.end_time.strftime('%d %b %Y %H:%M') if t.end_time else '',
+                'created': t.created_at.strftime('%d %b %Y') if t.created_at else '',
+            })
+
+        # Summary
+        total_tests = Test.objects.count()
+        active_tests = Test.objects.filter(status='ACTIVE').count()
+        total_attempts = TestAttempt.objects.count()
+        pending_grading = TestAttempt.objects.filter(status='SUBMITTED').count()
+        auto_graded = TestAttempt.objects.filter(status='EVALUATED').count()
+
+        ctx.update({
+            'tests': test_list,
+            'total_tests': total_tests,
+            'active_tests': active_tests,
+            'total_attempts': total_attempts,
+            'pending_grading': pending_grading,
+            'auto_graded': auto_graded,
+            'overall_pass_rate': round(
+                TestAttempt.objects.filter(result='PASS').count() / total_attempts * 100, 1
+            ) if total_attempts else 0,
+        })
+        return render(request, 'dashboards/admin_exam_management.html', ctx)
+
+
+# ═══════════════════════════════════════════════════════════════
+# 29. COMPLIANCE & SESSION TRACKING (consolidated)
+# ═══════════════════════════════════════════════════════════════
+class ComplianceView(View):
+    def get(self, request):
+        auth = _require_admin(request)
+        if auth:
+            return auth
+        ctx = _admin_ctx(request, 'compliance', 'Audit, Compliance & Sessions')
+
+        from audit.models import AuditLog
+        from sessions_tracking.models import UserSession, LoginHistory, UserDevice
+
+        now = timezone.now()
+        today = now.date()
+
+        # Recent audit logs
+        recent_logs = AuditLog.objects.all().order_by('-created_at')[:50]
+        audit_list = []
+        for log in recent_logs:
+            audit_list.append({
+                'id': str(log.id),
+                'action': log.action,
+                'entity_type': log.entity_type or '',
+                'entity_id': str(log.entity_id)[:8] if log.entity_id else '',
+                'user_type': log.user_type or '',
+                'user_id': str(log.user_id)[:8] if log.user_id else '',
+                'ip': log.ip_address or '',
+                'details': (str(log.details) or '')[:100] if log.details else '',
+                'time': _time_ago(log.created_at, now),
+                'timestamp': log.created_at.strftime('%d %b %Y %H:%M') if log.created_at else '',
+            })
+
+        # Session stats
+        active_sessions = UserSession.objects.filter(status='ACTIVE').count()
+        total_sessions_today = UserSession.objects.filter(started_at__date=today).count()
+
+        # Login history
+        logins_today = LoginHistory.objects.filter(attempted_at__date=today).count()
+        failed_logins = LoginHistory.objects.filter(attempted_at__date=today, result='FAILED').count()
+        successful_logins = LoginHistory.objects.filter(attempted_at__date=today, result='SUCCESS').count()
+
+        # Login trend (7 days)
+        login_trend = []
+        for i in range(6, -1, -1):
+            d = today - timedelta(days=i)
+            success = LoginHistory.objects.filter(attempted_at__date=d, result='SUCCESS').count()
+            failed = LoginHistory.objects.filter(attempted_at__date=d, result='FAILED').count()
+            login_trend.append({
+                'date': d.strftime('%a %d'),
+                'success': success,
+                'failed': failed,
+                'total': success + failed,
+            })
+
+        # Device stats
+        device_stats = UserDevice.objects.values('device_type').annotate(
+            count=Count('id')
+        ).order_by('-count')[:5]
+
+        # Audit action breakdown
+        action_breakdown = AuditLog.objects.filter(
+            created_at__date__gte=today - timedelta(days=7)
+        ).values('action').annotate(count=Count('id')).order_by('-count')[:10]
+
+        ctx.update({
+            'audit_logs': audit_list,
+            'total_logs': AuditLog.objects.count(),
+            'active_sessions': active_sessions,
+            'total_sessions_today': total_sessions_today,
+            'logins_today': logins_today,
+            'failed_logins': failed_logins,
+            'successful_logins': successful_logins,
+            'login_trend': login_trend,
+            'device_stats': list(device_stats),
+            'action_breakdown': list(action_breakdown),
+        })
+        return render(request, 'dashboards/admin_compliance.html', ctx)
+
+
+# ═══════════════════════════════════════════════════════════════
+# 30. AI FEATURES MANAGEMENT
+# ═══════════════════════════════════════════════════════════════
+class AIFeaturesView(View):
+    def get(self, request):
+        auth = _require_admin(request)
+        if auth:
+            return auth
+        ctx = _admin_ctx(request, 'ai_features', 'AI Features & Configuration')
+
+        from system_config.models import AIFeatureConfig, IntegrationConfig
+
+        # AI Feature configs
+        ai_configs = AIFeatureConfig.objects.all().order_by('feature_name')
+        features = []
+        for c in ai_configs:
+            features.append({
+                'id': str(c.id),
+                'name': c.feature_name,
+                'description': c.description or '',
+                'is_enabled': c.is_enabled,
+                'model_provider': c.model_provider or '',
+                'model_name': c.model_name or '',
+                'max_tokens': c.max_tokens_per_request,
+                'daily_limit': c.daily_request_limit,
+                'temperature': float(c.temperature) if c.temperature else 0.7,
+                'updated': c.updated_at.strftime('%d %b %Y') if c.updated_at else '',
+            })
+
+        # LLM integrations
+        llm_integrations = IntegrationConfig.objects.filter(
+            integration_type='LLM'
+        ).order_by('name')
+        llm_list = []
+        for i in llm_integrations:
+            llm_list.append({
+                'id': str(i.id),
+                'name': i.name,
+                'provider': i.provider or '',
+                'model': i.model_name or '',
+                'health': i.health_status,
+                'is_active': i.is_active,
+                'max_tokens': i.max_tokens,
+                'temperature': float(i.temperature) if i.temperature else 0,
+                'rate_limit': i.max_requests_per_hour or 0,
+            })
+
+        ai_capabilities = [
+            {'name': 'Test Analysis', 'desc': 'AI-powered test performance analysis with radar charts', 'icon': 'fa-chart-radar', 'status': 'active'},
+            {'name': 'Study Recommendations', 'desc': 'Personalized study plans based on performance data', 'icon': 'fa-brain', 'status': 'active'},
+            {'name': 'Question Generation', 'desc': 'Auto-generate questions from study materials', 'icon': 'fa-magic', 'status': 'beta'},
+            {'name': 'Answer Evaluation', 'desc': 'AI-assisted subjective answer evaluation', 'icon': 'fa-check-double', 'status': 'beta'},
+            {'name': 'Doubt Resolution', 'desc': 'Chatbot for answering student doubts', 'icon': 'fa-robot', 'status': 'planned'},
+            {'name': 'Content Summarization', 'desc': 'Auto-summarize study materials and lectures', 'icon': 'fa-compress-alt', 'status': 'planned'},
+        ]
+
+        ctx.update({
+            'features': features,
+            'llm_integrations': llm_list,
+            'ai_capabilities': ai_capabilities,
+            'total_features': len(features),
+            'enabled_features': sum(1 for f in features if f['is_enabled']),
+            'total_llm': len(llm_list),
+        })
+        return render(request, 'dashboards/admin_ai_features.html', ctx)
+
+
+# ═══════════════════════════════════════════════════════════════
+# 31. DASHBOARD INTEGRATION (links to Student/Teacher SPAs)
+# ═══════════════════════════════════════════════════════════════
+class DashboardIntegrationView(View):
+    def get(self, request):
+        auth = _require_admin(request)
+        if auth:
+            return auth
+        ctx = _admin_ctx(request, 'dashboard_integration', 'Dashboard Integration')
+
+        now = timezone.now()
+        today = now.date()
+
+        # Student dashboard stats
+        total_students = Student.objects.count()
+        active_students = Student.objects.filter(status='ACTIVE').count()
+
+        # Teacher dashboard stats
+        total_teachers = Teacher.objects.count()
+        active_teachers = Teacher.objects.filter(status='ACTIVE').count()
+
+        # Recent activity
+        from sessions_tracking.models import LoginHistory
+        student_logins_today = LoginHistory.objects.filter(
+            attempted_at__date=today, user_type='STUDENT', result='SUCCESS'
+        ).count()
+        teacher_logins_today = LoginHistory.objects.filter(
+            attempted_at__date=today, user_type='TEACHER', result='SUCCESS'
+        ).count()
+
+        ctx.update({
+            'dashboards': [
+                {
+                    'name': 'Student Dashboard',
+                    'url': '/student/dashboard/',
+                    'icon': 'fa-user-graduate',
+                    'color': '#8b5cf6',
+                    'total_users': total_students,
+                    'active_users': active_students,
+                    'logins_today': student_logins_today,
+                    'features': ['AI Test Analysis', 'Study Materials', 'Attendance', 'Exam Results', 'Help & Support'],
+                    'status': 'live',
+                },
+                {
+                    'name': 'Teacher Dashboard',
+                    'url': '/teacher/dashboard/',
+                    'icon': 'fa-chalkboard-teacher',
+                    'color': '#2563eb',
+                    'total_users': total_teachers,
+                    'active_users': active_teachers,
+                    'logins_today': teacher_logins_today,
+                    'features': ['Class Management', 'Test Creation', 'Grading', 'Attendance', 'Analytics'],
+                    'status': 'live',
+                },
+            ],
+            'student_dashboard_url': '/student/dashboard/',
+            'teacher_dashboard_url': '/teacher/dashboard/',
+        })
+        return render(request, 'dashboards/admin_dashboard_integration.html', ctx)
+
+
+# ═══════════════════════════════════════════════════════════════
+# 32. AUTO-GRADE ENDPOINT (POST)
+# ═══════════════════════════════════════════════════════════════
+class AutoGradeView(View):
+    """Trigger auto-grading for a specific test."""
+    def post(self, request, test_id):
+        auth = _require_admin(request)
+        if auth:
+            return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+        from assessments.models import Test
+        from assessments.services import auto_grade_test
+
+        try:
+            test = Test.objects.get(id=test_id)
+        except Test.DoesNotExist:
+            return JsonResponse({'error': 'Test not found'}, status=404)
+
+        results = auto_grade_test(test)
+        return JsonResponse({
+            'success': True,
+            'test': test.title,
+            'graded_count': len([r for r in results if 'error' not in r]),
+            'error_count': len([r for r in results if 'error' in r]),
+            'results': results,
+        })
+
+    def get(self, request, test_id):
+        """Grade and show results page."""
+        auth = _require_admin(request)
+        if auth:
+            return auth
+
+        from assessments.models import Test, TestAttempt
+        from assessments.services import auto_grade_test, generate_test_report
+
+        try:
+            test = Test.objects.get(id=test_id)
+        except Test.DoesNotExist:
+            return redirect('/staff/exam-management/')
+
+        # Auto-grade pending
+        pending = TestAttempt.objects.filter(
+            test=test, status__in=['SUBMITTED', 'AUTO_SUBMITTED']
+        ).count()
+
+        grading_results = []
+        if pending > 0:
+            grading_results = auto_grade_test(test)
+
+        report = generate_test_report(test)
+
+        ctx = _admin_ctx(request, 'exam_management', f'Grading: {test.title}',
+                        breadcrumb_parent='Exam Management',
+                        breadcrumb_parent_url='/staff/exam-management/')
+        ctx.update({
+            'test': {
+                'id': str(test.id),
+                'title': test.title,
+                'total_marks': test.total_marks,
+                'passing_marks': test.passing_marks,
+            },
+            'grading_results': grading_results,
+            'report': report,
+            'pending_count': pending,
+        })
+        return render(request, 'dashboards/admin_grade_results.html', ctx)

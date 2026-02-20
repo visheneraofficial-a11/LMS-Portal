@@ -276,7 +276,479 @@
   </div>
 </div>
 
-{{ block.super }}
+<!-- ══════ USERS AND GROUPS SECTION (WebLogic-style) ══════ -->
+<div style="background:#FFFFFF;border:1px solid rgba(132,79,193,0.15);border-radius:14px;padding:24px;margin-bottom:24px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+  <!-- Tabs -->
+  <div style="display:flex;border-bottom:2px solid #e2e8f0;margin-bottom:16px;">
+    <a href="/admin/accounts/student/" class="enf-tab-btn active">Users</a>
+    <a href="/admin/accounts/usergroup/" class="enf-tab-btn">Groups</a>
+  </div>
+  
+  <p style="color:#475569;font-size:0.85rem;margin-bottom:20px;">
+    <i class="fas fa-info-circle" style="color:#844FC1;margin-right:6px;"></i>
+    This section displays information about each group that has been configured in the security realm.
+  </p>
+  
+  <!-- Customize this table link -->
+  <div style="margin-bottom:16px;">
+    <a href="/admin/accounts/usergroup/" style="color:#2563eb;font-size:0.85rem;text-decoration:none;">
+      <i class="fas fa-cog" style="margin-right:4px;"></i> Customize this table
+    </a>
+  </div>
+  
+  <h4 style="margin:0 0 16px;color:#1e293b;font-weight:700;font-size:1rem;">Groups</h4>
+  
+  <!-- Action buttons -->
+  <div style="display:flex;gap:8px;margin-bottom:16px;">
+    <a href="/admin/accounts/usergroup/add/" class="enf-action-btn primary" style="font-size:0.78rem;padding:6px 14px;">
+      <i class="fas fa-plus"></i> New
+    </a>
+    <button class="enf-action-btn secondary" style="font-size:0.78rem;padding:6px 14px;" disabled>
+      <i class="fas fa-trash"></i> Delete
+    </button>
+  </div>
+  
+  <!-- Groups Table -->
+  <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+      <thead>
+        <tr style="background:rgba(132,79,193,0.06);">
+          <th style="padding:10px 12px;text-align:left;border-bottom:2px solid #e2e8f0;color:#475569;font-weight:600;">
+            <input type="checkbox" style="margin-right:8px;">
+          </th>
+          <th style="padding:10px 12px;text-align:left;border-bottom:2px solid #e2e8f0;color:#475569;font-weight:600;">Name <i class="fas fa-sort-up" style="font-size:0.7rem;color:#844FC1;"></i></th>
+          <th style="padding:10px 12px;text-align:left;border-bottom:2px solid #e2e8f0;color:#475569;font-weight:600;">Description</th>
+          <th style="padding:10px 12px;text-align:left;border-bottom:2px solid #e2e8f0;color:#475569;font-weight:600;">Provider</th>
+        </tr>
+      </thead>
+      <tbody id="groups-table-body">
+        {% for group in groups %}
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:10px 12px;"><input type="checkbox"></td>
+          <td style="padding:10px 12px;"><a href="/admin/accounts/usergroup/{{ group.id }}/change/" style="color:#2563eb;text-decoration:none;">{{ group.name }}</a></td>
+          <td style="padding:10px 12px;color:#64748b;">{{ group.description|default:"-" }}</td>
+          <td style="padding:10px 12px;color:#64748b;">{{ group.get_group_type_display }}</td>
+        </tr>
+        {% empty %}
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:10px 12px;"><input type="checkbox"></td>
+          <td style="padding:10px 12px;"><a href="#" style="color:#2563eb;text-decoration:none;">AdminChannelUsers</a></td>
+          <td style="padding:10px 12px;color:#64748b;">AdminChannelUsers can access the admin channel.</td>
+          <td style="padding:10px 12px;color:#64748b;">DefaultAuthenticator</td>
+        </tr>
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:10px 12px;"><input type="checkbox"></td>
+          <td style="padding:10px 12px;"><a href="#" style="color:#2563eb;text-decoration:none;">Administrators</a></td>
+          <td style="padding:10px 12px;color:#64748b;">Administrators can view and modify all resource attributes and start and stop servers.</td>
+          <td style="padding:10px 12px;color:#64748b;">DefaultAuthenticator</td>
+        </tr>
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:10px 12px;"><input type="checkbox"></td>
+          <td style="padding:10px 12px;"><a href="#" style="color:#2563eb;text-decoration:none;">AppTesters</a></td>
+          <td style="padding:10px 12px;color:#64748b;">AppTesters group.</td>
+          <td style="padding:10px 12px;color:#64748b;">DefaultAuthenticator</td>
+        </tr>
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:10px 12px;"><input type="checkbox"></td>
+          <td style="padding:10px 12px;"><a href="#" style="color:#2563eb;text-decoration:none;">Deployers</a></td>
+          <td style="padding:10px 12px;color:#64748b;">Deployers can view all resource attributes and deploy applications.</td>
+          <td style="padding:10px 12px;color:#64748b;">DefaultAuthenticator</td>
+        </tr>
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:10px 12px;"><input type="checkbox"></td>
+          <td style="padding:10px 12px;"><a href="#" style="color:#2563eb;text-decoration:none;">Monitors</a></td>
+          <td style="padding:10px 12px;color:#64748b;">Monitors can view all resource attributes and perform operations not restricted by roles.</td>
+          <td style="padding:10px 12px;color:#64748b;">DefaultAuthenticator</td>
+        </tr>
+        <tr style="border-bottom:1px solid #f1f5f9;">
+          <td style="padding:10px 12px;"><input type="checkbox"></td>
+          <td style="padding:10px 12px;"><a href="#" style="color:#2563eb;text-decoration:none;">Operators</a></td>
+          <td style="padding:10px 12px;color:#64748b;">Operators can view and modify all resource attributes and perform server lifecycle operations.</td>
+          <td style="padding:10px 12px;color:#64748b;">DefaultAuthenticator</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  
+  <div style="display:flex;justify-content:flex-end;margin-top:12px;color:#64748b;font-size:0.78rem;">
+    Showing 1 to {{ groups_count|default:"6" }} of {{ groups_count|default:"6" }} <a href="/admin/accounts/usergroup/" style="color:#2563eb;margin-left:12px;">Previous</a> | <span>Next</span>
+  </div>
+</div>
+
+<!-- ══════ INTEGRATION CONFIGURATION SECTION ══════ -->
+<div style="background:#FFFFFF;border:1px solid rgba(132,79,193,0.15);border-radius:14px;padding:24px;margin-bottom:24px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <h3 style="margin:0;color:#1e293b;font-size:1rem;font-weight:700;">
+      <i class="fas fa-plug" style="color:#844FC1;margin-right:10px;"></i>Integration Configuration
+    </h3>
+    <a href="/admin/system_config/integrationconfig/add/" class="enf-action-btn primary" style="font-size:0.78rem;padding:6px 14px;">
+      <i class="fas fa-plus"></i> Add Integration
+    </a>
+  </div>
+  
+  <p style="color:#64748b;font-size:0.85rem;margin-bottom:20px;">
+    Configure external service integrations for your LMS platform.
+  </p>
+  
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+    <!-- YouTube Integration -->
+    <div class="enf-integration-card" onclick="window.location='/admin/system_config/integrationconfig/?integration_type__exact=YOUTUBE'">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <div style="width:44px;height:44px;border-radius:10px;background:rgba(220,38,38,0.1);display:flex;align-items:center;justify-content:center;">
+          <i class="fab fa-youtube" style="color:#dc2626;font-size:1.2rem;"></i>
+        </div>
+        <div>
+          <h4 style="margin:0;font-size:0.9rem;color:#1e293b;font-weight:600;">YouTube Integration</h4>
+          <p style="margin:0;color:#64748b;font-size:0.75rem;">Live streaming & video hosting</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <span class="enf-scope-badge teacher">Live Classes</span>
+        <span class="enf-scope-badge student">Recorded Videos</span>
+      </div>
+      <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;">
+        <span class="enf-status {% if youtube_integration_active %}active{% else %}inactive{% endif %}">
+          {{ youtube_integration_status|default:"Not Configured" }}
+        </span>
+        <a href="/admin/system_config/integrationconfig/add/?integration_type=YOUTUBE" style="color:#844FC1;font-size:0.75rem;font-weight:600;">Configure →</a>
+      </div>
+    </div>
+    
+    <!-- LLM / AI Models Integration -->
+    <div class="enf-integration-card" onclick="window.location='/admin/system_config/integrationconfig/?integration_type__exact=LLM'">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <div style="width:44px;height:44px;border-radius:10px;background:rgba(124,58,237,0.1);display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-brain" style="color:#7c3aed;font-size:1.2rem;"></i>
+        </div>
+        <div>
+          <h4 style="margin:0;font-size:0.9rem;color:#1e293b;font-weight:600;">LLM / AI Models</h4>
+          <p style="margin:0;color:#64748b;font-size:0.75rem;">OpenAI, Claude, Gemini, etc.</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <span class="enf-scope-badge admin">Chat Bot</span>
+        <span class="enf-scope-badge student">Doubt Resolution</span>
+      </div>
+      <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;">
+        <span class="enf-status {% if llm_integration_active %}active{% else %}inactive{% endif %}">
+          {{ llm_integration_status|default:"Not Configured" }}
+        </span>
+        <a href="/admin/system_config/integrationconfig/add/?integration_type=LLM" style="color:#844FC1;font-size:0.75rem;font-weight:600;">Configure →</a>
+      </div>
+    </div>
+    
+    <!-- Meeting Platforms -->
+    <div class="enf-integration-card" onclick="window.location='/admin/system_config/classlinkconfig/'">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <div style="width:44px;height:44px;border-radius:10px;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-video" style="color:#2563eb;font-size:1.2rem;"></i>
+        </div>
+        <div>
+          <h4 style="margin:0;font-size:0.9rem;color:#1e293b;font-weight:600;">Meeting Platforms</h4>
+          <p style="margin:0;color:#64748b;font-size:0.75rem;">Zoom, Teams, Google Meet</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <span class="enf-scope-badge teacher">Video Calls</span>
+        <span class="enf-scope-badge admin">Webinars</span>
+      </div>
+      <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;">
+        <span class="enf-status {% if meeting_integration_active %}active{% else %}inactive{% endif %}">
+          {{ class_link_count|default:"0" }} Platform(s)
+        </span>
+        <a href="/admin/system_config/classlinkconfig/add/" style="color:#844FC1;font-size:0.75rem;font-weight:600;">Configure →</a>
+      </div>
+    </div>
+    
+    <!-- Cloud Storage -->
+    <div class="enf-integration-card" onclick="window.location='/admin/system_config/integrationconfig/?integration_type__exact=STORAGE'">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <div style="width:44px;height:44px;border-radius:10px;background:rgba(22,163,74,0.1);display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-cloud" style="color:#16a34a;font-size:1.2rem;"></i>
+        </div>
+        <div>
+          <h4 style="margin:0;font-size:0.9rem;color:#1e293b;font-weight:600;">Cloud Storage</h4>
+          <p style="margin:0;color:#64748b;font-size:0.75rem;">GDrive, S3, Azure Blob</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <span class="enf-scope-badge admin">Materials</span>
+        <span class="enf-scope-badge teacher">Assignments</span>
+      </div>
+      <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;">
+        <span class="enf-status {% if storage_integration_active %}active{% else %}inactive{% endif %}">
+          {{ storage_integration_status|default:"Not Configured" }}
+        </span>
+        <a href="/admin/system_config/integrationconfig/add/?integration_type=STORAGE" style="color:#844FC1;font-size:0.75rem;font-weight:600;">Configure →</a>
+      </div>
+    </div>
+    
+    <!-- Community Learning Features -->
+    <div class="enf-integration-card" onclick="window.location='/admin/system_config/featureflag/?flag_key__icontains=community'">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <div style="width:44px;height:44px;border-radius:10px;background:rgba(217,119,6,0.1);display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-users" style="color:#d97706;font-size:1.2rem;"></i>
+        </div>
+        <div>
+          <h4 style="margin:0;font-size:0.9rem;color:#1e293b;font-weight:600;">Community Learning</h4>
+          <p style="margin:0;color:#64748b;font-size:0.75rem;">Forums, discussions, peer learning</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <span class="enf-scope-badge student">Study Groups</span>
+        <span class="enf-scope-badge teacher">Q&A Forums</span>
+      </div>
+      <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;">
+        <span class="enf-status {% if community_features_active %}active{% else %}inactive{% endif %}">
+          {{ community_feature_status|default:"Available" }}
+        </span>
+        <a href="/admin/system_config/featureflag/add/" style="color:#844FC1;font-size:0.75rem;font-weight:600;">Configure →</a>
+      </div>
+    </div>
+    
+    <!-- Knowledge Tools -->
+    <div class="enf-integration-card" onclick="window.location='/admin/system_config/aifeatureconfig/'">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <div style="width:44px;height:44px;border-radius:10px;background:rgba(6,182,212,0.1);display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-lightbulb" style="color:#06b6d4;font-size:1.2rem;"></i>
+        </div>
+        <div>
+          <h4 style="margin:0;font-size:0.9rem;color:#1e293b;font-weight:600;">Knowledge Tools</h4>
+          <p style="margin:0;color:#64748b;font-size:0.75rem;">Mind maps, flashcards, notes</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <span class="enf-scope-badge student">Mind Map Generator</span>
+        <span class="enf-scope-badge admin">Analytics</span>
+      </div>
+      <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;">
+        <span class="enf-status {% if knowledge_tools_active %}active{% else %}inactive{% endif %}">
+          {{ knowledge_tools_status|default:"Available" }}
+        </span>
+        <a href="/admin/system_config/aifeatureconfig/add/" style="color:#844FC1;font-size:0.75rem;font-weight:600;">Configure →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ REPORTING SECTION ══════ -->
+<div style="background:#FFFFFF;border:1px solid rgba(22,163,74,0.15);border-radius:14px;padding:24px;margin-bottom:24px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <h3 style="margin:0;color:#1e293b;font-size:1rem;font-weight:700;">
+      <i class="fas fa-chart-bar" style="color:#16a34a;margin-right:10px;"></i>Reporting Center
+    </h3>
+    <div style="display:flex;gap:8px;">
+      <a href="/admin/system_config/reporttemplate/add/" class="enf-action-btn primary" style="font-size:0.78rem;padding:6px 14px;">
+        <i class="fas fa-plus"></i> Create Template
+      </a>
+      <a href="/admin/system_config/reporttemplate/" class="enf-action-btn secondary" style="font-size:0.78rem;padding:6px 14px;">
+        <i class="fas fa-list"></i> All Templates
+      </a>
+    </div>
+  </div>
+  
+  <p style="color:#64748b;font-size:0.85rem;margin-bottom:20px;">
+    Generate and export reports with customizable filters. Choose output format: Excel, CSV, PDF, or JSON.
+  </p>
+  
+  <!-- Report Quick Generate -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;">
+    <!-- Attendance Report -->
+    <div class="enf-report-card">
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;">
+        <div style="width:40px;height:40px;border-radius:10px;background:rgba(22,163,74,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fas fa-clipboard-check" style="color:#16a34a;font-size:1rem;"></i>
+        </div>
+        <div>
+          <h4 style="margin:0;font-size:0.9rem;color:#1e293b;font-weight:600;">Attendance Report</h4>
+          <p style="margin:0;color:#64748b;font-size:0.75rem;">Track daily/weekly/monthly attendance</p>
+        </div>
+      </div>
+      <form method="get" action="/staff/reports/" style="display:flex;flex-direction:column;gap:8px;">
+        <input type="hidden" name="report_type" value="attendance">
+        <select name="date_range" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.78rem;background:#fff;">
+          <option value="today">Today</option>
+          <option value="week">This Week</option>
+          <option value="month" selected>This Month</option>
+          <option value="quarter">This Quarter</option>
+          <option value="custom">Custom Date Range</option>
+        </select>
+        <select name="user_type" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.78rem;background:#fff;">
+          <option value="all">All Users</option>
+          <option value="student">Students Only</option>
+          <option value="teacher">Teachers Only</option>
+        </select>
+        <select name="batch" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.78rem;background:#fff;">
+          <option value="">All Batches</option>
+          {% for batch in batches %}
+          <option value="{{ batch.id }}">{{ batch.name }}</option>
+          {% endfor %}
+        </select>
+        <select name="format" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.78rem;background:#fff;">
+          <option value="excel">📊 Excel (.xlsx)</option>
+          <option value="csv">📄 CSV</option>
+          <option value="pdf">📕 PDF</option>
+          <option value="json">📋 JSON</option>
+        </select>
+        <button type="submit" class="enf-action-btn success" style="font-size:0.78rem;padding:10px;">
+          <i class="fas fa-file-export"></i> Generate Report
+        </button>
+      </form>
+    </div>
+    
+    <!-- Student Report -->
+    <div class="enf-report-card">
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;">
+        <div style="width:40px;height:40px;border-radius:10px;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fas fa-user-graduate" style="color:#2563eb;font-size:1rem;"></i>
+        </div>
+        <div>
+          <h4 style="margin:0;font-size:0.9rem;color:#1e293b;font-weight:600;">Student Report</h4>
+          <p style="margin:0;color:#64748b;font-size:0.75rem;">Student profiles & performance data</p>
+        </div>
+      </div>
+      <form method="get" action="/staff/reports/" style="display:flex;flex-direction:column;gap:8px;">
+        <input type="hidden" name="report_type" value="students">
+        <select name="status" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.78rem;background:#fff;">
+          <option value="all">All Status</option>
+          <option value="ACTIVE" selected>Active Students</option>
+          <option value="INACTIVE">Inactive Students</option>
+          <option value="SUSPENDED">Suspended</option>
+        </select>
+        <select name="class" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.78rem;background:#fff;">
+          <option value="">All Classes</option>
+          <option value="CLASS_9">Class 9</option>
+          <option value="CLASS_10">Class 10</option>
+          <option value="CLASS_11">Class 11</option>
+          <option value="CLASS_12">Class 12</option>
+          <option value="DROPPER">Dropper</option>
+        </select>
+        <select name="fee_status" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.78rem;background:#fff;">
+          <option value="">All Fee Status</option>
+          <option value="PAID">Paid</option>
+          <option value="PENDING">Pending</option>
+          <option value="OVERDUE">Overdue</option>
+        </select>
+        <select name="format" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.78rem;background:#fff;">
+          <option value="excel">📊 Excel (.xlsx)</option>
+          <option value="csv">📄 CSV</option>
+          <option value="pdf">📕 PDF</option>
+          <option value="json">📋 JSON</option>
+        </select>
+        <button type="submit" class="enf-action-btn success" style="font-size:0.78rem;padding:10px;">
+          <i class="fas fa-file-export"></i> Generate Report
+        </button>
+      </form>
+    </div>
+    
+    <!-- Teacher Report -->
+    <div class="enf-report-card">
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;">
+        <div style="width:40px;height:40px;border-radius:10px;background:rgba(217,119,6,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fas fa-chalkboard-teacher" style="color:#d97706;font-size:1rem;"></i>
+        </div>
+        <div>
+          <h4 style="margin:0;font-size:0.9rem;color:#1e293b;font-weight:600;">Teacher Report</h4>
+          <p style="margin:0;color:#64748b;font-size:0.75rem;">Faculty performance & classes</p>
+        </div>
+      </div>
+      <form method="get" action="/staff/reports/" style="display:flex;flex-direction:column;gap:8px;">
+        <input type="hidden" name="report_type" value="teachers">
+        <select name="status" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.78rem;background:#fff;">
+          <option value="all">All Status</option>
+          <option value="ACTIVE" selected>Active Teachers</option>
+          <option value="INACTIVE">Inactive Teachers</option>
+          <option value="ON_LEAVE">On Leave</option>
+        </select>
+        <select name="employment_type" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.78rem;background:#fff;">
+          <option value="">All Employment Types</option>
+          <option value="FULL_TIME">Full Time</option>
+          <option value="PART_TIME">Part Time</option>
+          <option value="CONTRACT">Contract</option>
+          <option value="VISITING">Visiting Faculty</option>
+        </select>
+        <select name="department" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.78rem;background:#fff;">
+          <option value="">All Departments</option>
+          <option value="PHYSICS">Physics</option>
+          <option value="CHEMISTRY">Chemistry</option>
+          <option value="MATHEMATICS">Mathematics</option>
+          <option value="BIOLOGY">Biology</option>
+        </select>
+        <select name="format" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.78rem;background:#fff;">
+          <option value="excel">📊 Excel (.xlsx)</option>
+          <option value="csv">📄 CSV</option>
+          <option value="pdf">📕 PDF</option>
+          <option value="json">📋 JSON</option>
+        </select>
+        <button type="submit" class="enf-action-btn success" style="font-size:0.78rem;padding:10px;">
+          <i class="fas fa-file-export"></i> Generate Report
+        </button>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Default Report Templates -->
+  <div style="border-top:1px solid #e2e8f0;padding-top:20px;margin-bottom:20px;">
+    <h4 style="margin:0 0 12px 0;color:#1e293b;font-size:0.9rem;font-weight:600;">
+      <i class="fas fa-magic" style="color:#8b5cf6;margin-right:8px;"></i>Quick Templates
+    </h4>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+      <a href="/staff/reports/?report_type=attendance&date_range=today&format=excel" class="enf-quick-template">
+        <i class="fas fa-calendar-day" style="color:#16a34a;"></i>
+        <span>Today's Attendance</span>
+      </a>
+      <a href="/staff/reports/?report_type=students&status=ACTIVE&format=excel" class="enf-quick-template">
+        <i class="fas fa-users" style="color:#2563eb;"></i>
+        <span>Active Students List</span>
+      </a>
+      <a href="/staff/reports/?report_type=students&fee_status=PENDING&format=excel" class="enf-quick-template">
+        <i class="fas fa-rupee-sign" style="color:#ef4444;"></i>
+        <span>Fee Pending List</span>
+      </a>
+      <a href="/staff/reports/?report_type=attendance&date_range=month&format=pdf" class="enf-quick-template">
+        <i class="fas fa-file-pdf" style="color:#dc2626;"></i>
+        <span>Monthly Summary (PDF)</span>
+      </a>
+    </div>
+  </div>
+  
+  <!-- Saved Report Templates -->
+  <div style="border-top:1px solid #e2e8f0;padding-top:20px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <h4 style="margin:0;color:#1e293b;font-size:0.9rem;font-weight:600;">
+        <i class="fas fa-bookmark" style="color:#844FC1;margin-right:8px;"></i>Saved Report Templates
+      </h4>
+      <a href="/admin/system_config/reporttemplate/" style="color:#844FC1;font-size:0.78rem;font-weight:600;">View All →</a>
+    </div>
+    <div style="display:grid;gap:8px;">
+      {% for template in report_templates %}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(132,79,193,0.04);border-radius:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <i class="fas fa-file-alt" style="color:#844FC1;"></i>
+          <span style="font-size:0.85rem;color:#1e293b;">{{ template.name }}</span>
+          <span class="enf-badge-sm">{{ template.get_report_type_display }}</span>
+          <span class="enf-badge-sm" style="background:rgba(99,102,241,0.1);color:#6366f1;">{{ template.get_default_format_display }}</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <a href="/staff/reports/run/{{ template.id }}/" class="enf-action-btn success" style="font-size:0.72rem;padding:4px 10px;">
+            <i class="fas fa-play"></i> Run
+          </a>
+          <a href="/admin/system_config/reporttemplate/{{ template.id }}/change/" class="enf-action-btn secondary" style="font-size:0.72rem;padding:4px 10px;">
+            <i class="fas fa-edit"></i> Edit
+          </a>
+        </div>
+      </div>
+      {% empty %}
+      <p style="color:#64748b;font-size:0.85rem;margin:0;">
+        <i class="fas fa-info-circle" style="margin-right:6px;"></i>
+        No saved report templates yet.
+        <a href="/admin/system_config/reporttemplate/add/" style="color:#844FC1;font-weight:600;">Create your first template →</a>
+      </p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
 
 <!-- Automation toggle JS -->
 <script>

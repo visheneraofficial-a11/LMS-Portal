@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from sessions_tracking.models import UserDevice, UserSession, LoginHistory, UserActivity
-from admin_utils import EnhancedModelAdmin, export_as_csv, export_as_json, colored_status
+from core.admin_utils import EnhancedModelAdmin, export_as_csv, export_as_json, colored_status
 
 
 @admin.register(UserDevice)

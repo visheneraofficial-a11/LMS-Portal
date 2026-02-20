@@ -383,6 +383,7 @@ class Admin(BaseUser):
     class AdminType(models.TextChoices):
         SUPER_ADMIN = 'SUPER_ADMIN', 'Super Admin'
         TENANT_ADMIN = 'TENANT_ADMIN', 'Tenant Admin'
+        DEPARTMENT_ADMIN = 'DEPARTMENT_ADMIN', 'Department Admin'
         BRANCH_ADMIN = 'BRANCH_ADMIN', 'Branch Admin'
         ACADEMIC_ADMIN = 'ACADEMIC_ADMIN', 'Academic Admin'
         FINANCE_ADMIN = 'FINANCE_ADMIN', 'Finance Admin'
@@ -394,6 +395,11 @@ class Admin(BaseUser):
     role = models.ForeignKey(
         'accounts.Role', on_delete=models.SET_NULL,
         null=True, blank=True, related_name='admins'
+    )
+    staff_role = models.ForeignKey(
+        'accounts.StaffRole', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='staff_admins',
+        help_text='Staff panel access role'
     )
     permissions_override = models.JSONField(default=list, blank=True, help_text="Direct permission overrides")
     managed_branches = models.JSONField(default=list, blank=True)
@@ -523,11 +529,12 @@ class Role(models.Model):
     class AppliesTo(models.TextChoices):
         ADMIN = 'ADMIN', 'Admin'
         TEACHER = 'TEACHER', 'Teacher'
+        TEACHING_ASSISTANT = 'TEACHING_ASSISTANT', 'Teaching Assistant'
         STUDENT = 'STUDENT', 'Student'
         PARENT = 'PARENT', 'Parent'
         ALL = 'ALL', 'All'
 
-    applies_to = models.CharField(max_length=10, choices=AppliesTo.choices, default=AppliesTo.ALL)
+    applies_to = models.CharField(max_length=20, choices=AppliesTo.choices, default=AppliesTo.ALL)
 
     level = models.IntegerField(default=0, help_text="Role hierarchy level")
     parent_role = models.ForeignKey(
@@ -600,7 +607,7 @@ class Permission(models.Model):
         ordering = ['module', 'category', 'action']
 
     def __str__(self):
-        return self.code
+        return self.name
 
 
 class RolePermission(models.Model):
@@ -692,3 +699,912 @@ class PasswordChangeRequest(models.Model):
             models.Index(fields=['user_id', 'user_type', 'status'], name='idx_pwd_req_user'),
             models.Index(fields=['reset_token'], name='idx_pwd_req_token'),
         ]
+
+
+# ---------------------------------------------------------------------------
+# Staff Role — Super Admin / Operator / Admin for staff panel access
+# ---------------------------------------------------------------------------
+class StaffRole(models.Model):
+    """Defines staff-level roles with hierarchical permissions for admins/operators."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        'tenants.Tenant', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='staff_roles',
+    )
+
+    class StaffLevel(models.TextChoices):
+        SUPER_ADMIN = 'SUPER_ADMIN', 'Super Admin'
+        ADMIN = 'ADMIN', 'Admin'
+        OPERATOR = 'OPERATOR', 'Operator'
+
+    level = models.CharField(max_length=15, choices=StaffLevel.choices, default=StaffLevel.OPERATOR)
+    name = models.CharField(max_length=200, help_text='Display name, e.g. "Academic Operator"')
+    description = models.TextField(null=True, blank=True)
+
+    # Granular permissions
+    can_manage_students = models.BooleanField(default=True)
+    can_manage_teachers = models.BooleanField(default=True)
+    can_manage_exams = models.BooleanField(default=False)
+    can_manage_attendance = models.BooleanField(default=True)
+    can_manage_content = models.BooleanField(default=False)
+    can_manage_finance = models.BooleanField(default=False)
+    can_manage_settings = models.BooleanField(default=False)
+    can_manage_integrations = models.BooleanField(default=False)
+    can_view_reports = models.BooleanField(default=True)
+    can_export_data = models.BooleanField(default=False)
+    can_manage_roles = models.BooleanField(default=False)
+    can_view_audit = models.BooleanField(default=True)
+    can_manage_website = models.BooleanField(default=False)
+    can_manage_ai = models.BooleanField(default=False)
+
+    # Scope restrictions
+    allowed_centers = models.JSONField(default=list, blank=True, help_text='Restrict to specific center IDs')
+    allowed_batches = models.JSONField(default=list, blank=True, help_text='Restrict to specific batch IDs')
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.UUIDField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'staff_roles'
+        ordering = ['level', 'name']
+
+    def __str__(self):
+        return f"{self.get_level_display()} — {self.name}"
+
+
+# -----------------------------------------------------------------------
+# Scoped User ↔ Role Assignment
+# -----------------------------------------------------------------------
+class UserRoleAssignment(models.Model):
+    """
+    Assigns a Role to any user type within a specific scope.
+    Supports temporary roles via valid_from / valid_until.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        'tenants.Tenant', on_delete=models.CASCADE,
+        related_name='user_role_assignments',
+    )
+
+    # Polymorphic user reference
+    user_id = models.UUIDField(db_index=True)
+
+    class UserType(models.TextChoices):
+        STUDENT = 'STUDENT', 'Student'
+        TEACHER = 'TEACHER', 'Teacher'
+        ADMIN = 'ADMIN', 'Admin'
+        PARENT = 'PARENT', 'Parent'
+
+    user_type = models.CharField(max_length=10, choices=UserType.choices)
+
+    role = models.ForeignKey(
+        'accounts.Role', on_delete=models.CASCADE,
+        related_name='user_assignments',
+    )
+
+    # Scope
+    class ScopeType(models.TextChoices):
+        GLOBAL = 'GLOBAL', 'Global'
+        TENANT = 'TENANT', 'Tenant'
+        DEPARTMENT = 'DEPARTMENT', 'Department'
+        COURSE = 'COURSE', 'Course'
+        BATCH = 'BATCH', 'Batch'
+
+    scope_type = models.CharField(
+        max_length=15, choices=ScopeType.choices, default=ScopeType.TENANT,
+    )
+    scope_id = models.UUIDField(
+        null=True, blank=True,
+        help_text="ID of the scoped entity (department, course, batch). Null for GLOBAL/TENANT.",
+    )
+
+    # Temporary roles
+    valid_from = models.DateTimeField(null=True, blank=True)
+    valid_until = models.DateTimeField(null=True, blank=True)
+
+    is_active = models.BooleanField(default=True)
+    assigned_by = models.UUIDField(null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'user_role_assignments'
+        ordering = ['-created_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['tenant', 'user_id', 'user_type', 'role', 'scope_type', 'scope_id'],
+                name='uq_user_role_scope',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['tenant', 'user_id', 'user_type'], name='idx_ura_user'),
+            models.Index(fields=['tenant', 'role'], name='idx_ura_role'),
+            models.Index(fields=['scope_type', 'scope_id'], name='idx_ura_scope'),
+        ]
+
+    def __str__(self):
+        return f"{self.user_type}:{self.user_id} → {self.role.code} ({self.scope_type})"
+
+    @property
+    def is_expired(self):
+        if self.valid_until and timezone.now() > self.valid_until:
+            return True
+        return False
+
+    @property
+    def is_effective(self):
+        now = timezone.now()
+        if self.valid_from and now < self.valid_from:
+            return False
+        if self.valid_until and now > self.valid_until:
+            return False
+        return self.is_active
+
+
+# -----------------------------------------------------------------------
+# ABAC Policy
+# -----------------------------------------------------------------------
+class ABACPolicy(models.Model):
+    """
+    Attribute-Based Access Control policy.
+    Evaluated alongside RBAC permissions for fine-grained control.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        'tenants.Tenant', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='abac_policies',
+    )
+
+    code = models.CharField(max_length=100, unique=True, help_text="e.g. 'enrollment_active_only'")
+    name = models.CharField(max_length=200)
+    description = models.TextField(null=True, blank=True)
+
+    # What resource & action this policy applies to
+    resource = models.CharField(max_length=50, help_text="e.g. 'COURSE', 'GRADE', 'USER'")
+    action = models.CharField(max_length=20, help_text="e.g. 'VIEW', 'EDIT', 'DELETE'")
+
+    # JSON conditions (evaluated at runtime)
+    conditions = models.JSONField(
+        default=dict, blank=True,
+        help_text=(
+            'JSON condition tree. Example: '
+            '{"all": [{"attr": "user.status", "op": "eq", "value": "ACTIVE"}, '
+            '{"attr": "enrollment.status", "op": "in", "value": ["ENROLLED","ACTIVE"]}]}'
+        ),
+    )
+
+    class Effect(models.TextChoices):
+        ALLOW = 'ALLOW', 'Allow'
+        DENY = 'DENY', 'Deny'
+
+    effect = models.CharField(max_length=5, choices=Effect.choices, default=Effect.ALLOW)
+    priority = models.IntegerField(default=0, help_text="Higher = evaluated first. Deny wins on tie.")
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.UUIDField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'abac_policies'
+        ordering = ['-priority', 'code']
+        verbose_name = 'ABAC Policy'
+        verbose_name_plural = 'ABAC Policies'
+
+    def __str__(self):
+        return f"[{self.effect}] {self.code} — {self.resource}:{self.action}"
+
+
+# -----------------------------------------------------------------------
+# Access Audit Log (lightweight, append-only)
+# -----------------------------------------------------------------------
+class AccessLog(models.Model):
+    """
+    Immutable log of every access decision.
+    Kept separate from the general AuditLog for performance.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant_id = models.UUIDField(db_index=True)
+    user_id = models.UUIDField(db_index=True)
+    user_type = models.CharField(max_length=10)
+
+    action = models.CharField(max_length=50)
+    resource = models.CharField(max_length=100)
+    resource_id = models.CharField(max_length=100, null=True, blank=True)
+
+    class Decision(models.TextChoices):
+        ALLOW = 'ALLOW', 'Allow'
+        DENY = 'DENY', 'Deny'
+
+    decision = models.CharField(max_length=5, choices=Decision.choices)
+    reason = models.CharField(max_length=500, null=True, blank=True)
+
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+    device_id = models.UUIDField(null=True, blank=True)
+
+    context = models.JSONField(null=True, blank=True, help_text="Snapshot of evaluated attributes")
+    timestamp = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        db_table = 'access_logs'
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['tenant_id', 'user_id', 'timestamp'], name='idx_access_user_ts'),
+            models.Index(fields=['tenant_id', 'action', 'resource'], name='idx_access_action'),
+        ]
+
+    def __str__(self):
+        return f"{self.decision} {self.user_type}:{self.user_id} → {self.resource}:{self.action}"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# USER GROUPS — Group-based role assignment
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class UserGroup(models.Model):
+    """Groups for assigning roles to multiple users at once."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        'tenants.Tenant', on_delete=models.CASCADE, related_name='user_groups'
+    )
+
+    code = models.CharField(max_length=50)
+    name = models.CharField(max_length=200)
+    description = models.TextField(null=True, blank=True)
+
+    class GroupType(models.TextChoices):
+        DEPARTMENT = 'DEPARTMENT', 'Department'
+        BATCH = 'BATCH', 'Batch'
+        CUSTOM = 'CUSTOM', 'Custom'
+        SYSTEM = 'SYSTEM', 'System'
+
+    group_type = models.CharField(
+        max_length=20, choices=GroupType.choices, default=GroupType.CUSTOM
+    )
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.UUIDField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'user_groups'
+        ordering = ['group_type', 'name']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['tenant', 'code'], name='uq_user_group_code'
+            ),
+        ]
+        verbose_name = 'User Group'
+        verbose_name_plural = 'User Groups'
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
+
+class GroupMembership(models.Model):
+    """Membership of users in groups."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey('tenants.Tenant', on_delete=models.CASCADE)
+    group = models.ForeignKey(
+        UserGroup, on_delete=models.CASCADE, related_name='memberships'
+    )
+
+    user_id = models.UUIDField(db_index=True)
+
+    class UserType(models.TextChoices):
+        STUDENT = 'STUDENT', 'Student'
+        TEACHER = 'TEACHER', 'Teacher'
+        ADMIN = 'ADMIN', 'Admin'
+        PARENT = 'PARENT', 'Parent'
+
+    user_type = models.CharField(max_length=10, choices=UserType.choices)
+
+    added_by = models.UUIDField(null=True, blank=True)
+    added_at = models.DateTimeField(default=timezone.now)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'group_memberships'
+        unique_together = ('group', 'user_id', 'user_type')
+        verbose_name = 'Group Membership'
+        verbose_name_plural = 'Group Memberships'
+
+    def __str__(self):
+        return f"{self.user_type}:{str(self.user_id)[:8]} → {self.group.name}"
+
+
+class GroupRoleAssignment(models.Model):
+    """Assign a Role to an entire Group — all members inherit the role."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey('tenants.Tenant', on_delete=models.CASCADE)
+    group = models.ForeignKey(
+        UserGroup, on_delete=models.CASCADE, related_name='role_assignments'
+    )
+    role = models.ForeignKey(
+        'accounts.Role', on_delete=models.CASCADE,
+        related_name='group_assignments'
+    )
+
+    class ScopeType(models.TextChoices):
+        GLOBAL = 'GLOBAL', 'Global'
+        TENANT = 'TENANT', 'Tenant'
+        DEPARTMENT = 'DEPARTMENT', 'Department'
+        COURSE = 'COURSE', 'Course'
+        BATCH = 'BATCH', 'Batch'
+
+    scope_type = models.CharField(
+        max_length=15, choices=ScopeType.choices, default=ScopeType.TENANT
+    )
+    scope_id = models.UUIDField(null=True, blank=True)
+
+    is_active = models.BooleanField(default=True)
+    assigned_by = models.UUIDField(null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'group_role_assignments'
+        unique_together = ('group', 'role', 'scope_type', 'scope_id')
+        verbose_name = 'Group Role Assignment'
+        verbose_name_plural = 'Group Role Assignments'
+
+    def __str__(self):
+        return f"{self.group.name} → {self.role.name} ({self.scope_type})"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ACCOUNT SECURITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class SecurityPolicy(models.Model):
+    """Account security policies — password, MFA, session, lockout rules."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        'tenants.Tenant', on_delete=models.CASCADE,
+        null=True, blank=True, related_name='security_policies'
+    )
+
+    name = models.CharField(max_length=200)
+    description = models.TextField(null=True, blank=True)
+
+    # ── Password Policy ──
+    min_password_length = models.IntegerField(default=8)
+    require_uppercase = models.BooleanField(default=True)
+    require_lowercase = models.BooleanField(default=True)
+    require_digits = models.BooleanField(default=True)
+    require_special_chars = models.BooleanField(default=True)
+    password_expiry_days = models.IntegerField(default=90)
+    password_history_count = models.IntegerField(default=5)
+    prevent_common_passwords = models.BooleanField(default=True)
+
+    # ── MFA Policy ──
+    mfa_required = models.BooleanField(default=False)
+    mfa_required_for_admins = models.BooleanField(default=True)
+    allowed_mfa_methods = models.JSONField(
+        default=list, blank=True,
+        help_text='e.g. ["TOTP","SMS","EMAIL"]'
+    )
+
+    # ── Session Policy ──
+    max_concurrent_sessions = models.IntegerField(default=3)
+    session_timeout_minutes = models.IntegerField(default=480)
+    idle_timeout_minutes = models.IntegerField(default=30)
+
+    # ── Lockout Policy ──
+    max_failed_attempts = models.IntegerField(default=5)
+    lockout_duration_minutes = models.IntegerField(default=30)
+    progressive_lockout = models.BooleanField(
+        default=True,
+        help_text='Each subsequent lockout doubles duration'
+    )
+
+    # ── IP & Device Policy ──
+    ip_whitelist_enabled = models.BooleanField(default=False)
+    ip_whitelist = models.JSONField(default=list, blank=True)
+    geo_restriction_enabled = models.BooleanField(default=False)
+    allowed_countries = models.JSONField(default=list, blank=True)
+    device_trust_enabled = models.BooleanField(default=False)
+
+    class AppliesTo(models.TextChoices):
+        ALL = 'ALL', 'All Users'
+        ADMIN = 'ADMIN', 'Admins Only'
+        TEACHER = 'TEACHER', 'Teachers Only'
+        STUDENT = 'STUDENT', 'Students Only'
+
+    applies_to = models.CharField(
+        max_length=20, choices=AppliesTo.choices, default=AppliesTo.ALL
+    )
+
+    is_active = models.BooleanField(default=True)
+    priority = models.IntegerField(default=0, help_text='Higher = evaluated first')
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'security_policies'
+        ordering = ['-priority', 'name']
+        verbose_name = 'Security Policy'
+        verbose_name_plural = 'Security Policies'
+
+    def __str__(self):
+        return self.name
+
+
+class LoginAttemptLog(models.Model):
+    """Track every login attempt for security monitoring."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        'tenants.Tenant', on_delete=models.CASCADE,
+        null=True, blank=True
+    )
+
+    user_id = models.UUIDField(null=True, blank=True)
+    user_type = models.CharField(max_length=20, null=True, blank=True)
+    username_attempted = models.CharField(max_length=255)
+
+    class AttemptResult(models.TextChoices):
+        SUCCESS = 'SUCCESS', 'Success'
+        FAILED_PASSWORD = 'FAILED_PASSWORD', 'Failed — Wrong Password'
+        FAILED_NOT_FOUND = 'FAILED_NOT_FOUND', 'Failed — User Not Found'
+        FAILED_LOCKED = 'FAILED_LOCKED', 'Failed — Account Locked'
+        FAILED_SUSPENDED = 'FAILED_SUSPENDED', 'Failed — Account Suspended'
+        FAILED_MFA = 'FAILED_MFA', 'Failed — MFA Failed'
+        FAILED_IP_BLOCKED = 'FAILED_IP_BLOCKED', 'Failed — IP Blocked'
+
+    result = models.CharField(max_length=25, choices=AttemptResult.choices)
+
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+    geo_location = models.JSONField(null=True, blank=True)
+    device_fingerprint = models.CharField(max_length=255, null=True, blank=True)
+
+    risk_score = models.IntegerField(
+        default=0, help_text='0-100, higher = riskier'
+    )
+    risk_factors = models.JSONField(default=list, blank=True)
+
+    attempted_at = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        db_table = 'login_attempt_logs'
+        ordering = ['-attempted_at']
+        verbose_name = 'Login Attempt'
+        verbose_name_plural = 'Login Attempts'
+        indexes = [
+            models.Index(
+                fields=['user_id', 'attempted_at'], name='idx_logatt_user_time'
+            ),
+            models.Index(
+                fields=['ip_address', 'attempted_at'], name='idx_logatt_ip_time'
+            ),
+            models.Index(
+                fields=['result', 'attempted_at'], name='idx_logatt_result_time'
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.result}: {self.username_attempted} @ {self.attempted_at}"
+
+
+class TrustedDevice(models.Model):
+    """Trusted devices — MFA can be skipped on trusted devices."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey('tenants.Tenant', on_delete=models.CASCADE)
+
+    user_id = models.UUIDField(db_index=True)
+    user_type = models.CharField(max_length=10)
+
+    device_name = models.CharField(max_length=200)
+    device_fingerprint = models.CharField(max_length=255, unique=True)
+    device_type = models.CharField(max_length=50, null=True, blank=True)
+    browser = models.CharField(max_length=100, null=True, blank=True)
+    os_name = models.CharField(
+        max_length=100, null=True, blank=True, db_column='os'
+    )
+
+    trusted_at = models.DateTimeField(default=timezone.now)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+
+    is_active = models.BooleanField(default=True)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    revoked_reason = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        db_table = 'trusted_devices'
+        ordering = ['-trusted_at']
+        verbose_name = 'Trusted Device'
+        verbose_name_plural = 'Trusted Devices'
+
+    def __str__(self):
+        return f"{self.device_name} ({self.user_type}:{str(self.user_id)[:8]})"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ANALYTICS & BEHAVIOR MONITORING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class BehaviorEvent(models.Model):
+    """Tracks user behavior events for analytics and anomaly detection."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        'tenants.Tenant', on_delete=models.CASCADE, null=True, blank=True
+    )
+
+    user_id = models.UUIDField(db_index=True)
+    user_type = models.CharField(max_length=10)
+
+    class EventCategory(models.TextChoices):
+        AUTH = 'AUTH', 'Authentication'
+        NAVIGATION = 'NAVIGATION', 'Navigation'
+        DATA_ACCESS = 'DATA_ACCESS', 'Data Access'
+        DATA_MODIFICATION = 'DATA_MODIFICATION', 'Data Modification'
+        EXPORT = 'EXPORT', 'Data Export'
+        COMMUNICATION = 'COMMUNICATION', 'Communication'
+        ASSESSMENT = 'ASSESSMENT', 'Assessment'
+        ATTENDANCE = 'ATTENDANCE', 'Attendance'
+        ADMIN_ACTION = 'ADMIN_ACTION', 'Admin Action'
+        SYSTEM = 'SYSTEM', 'System'
+
+    event_category = models.CharField(
+        max_length=20, choices=EventCategory.choices
+    )
+    event_action = models.CharField(max_length=100)
+    event_detail = models.JSONField(null=True, blank=True)
+
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+    session_id = models.UUIDField(null=True, blank=True)
+
+    is_anomalous = models.BooleanField(default=False)
+    anomaly_score = models.FloatField(default=0.0)
+
+    occurred_at = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        db_table = 'behavior_events'
+        ordering = ['-occurred_at']
+        verbose_name = 'Behavior Event'
+        verbose_name_plural = 'Behavior Events'
+        indexes = [
+            models.Index(
+                fields=['user_id', 'event_category', 'occurred_at'],
+                name='idx_behavior_user_cat',
+            ),
+            models.Index(
+                fields=['is_anomalous', 'occurred_at'],
+                name='idx_behavior_anomaly',
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.event_category}:{self.event_action} "
+            f"by {self.user_type}:{str(self.user_id)[:8]}"
+        )
+
+
+class AnomalyDetectionRule(models.Model):
+    """Rules for detecting anomalous user behaviour."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        'tenants.Tenant', on_delete=models.CASCADE, null=True, blank=True
+    )
+
+    code = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=200)
+    description = models.TextField(null=True, blank=True)
+
+    class RuleType(models.TextChoices):
+        THRESHOLD = 'THRESHOLD', 'Threshold-based'
+        PATTERN = 'PATTERN', 'Pattern-based'
+        TIME_BASED = 'TIME_BASED', 'Time-based'
+        GEO_BASED = 'GEO_BASED', 'Geo-based'
+        BEHAVIORAL = 'BEHAVIORAL', 'Behavioral'
+
+    rule_type = models.CharField(max_length=15, choices=RuleType.choices)
+
+    target_event_category = models.CharField(
+        max_length=20, null=True, blank=True
+    )
+    conditions = models.JSONField(
+        default=dict, blank=True,
+        help_text='Rule conditions in JSON format'
+    )
+    threshold_value = models.FloatField(null=True, blank=True)
+    time_window_minutes = models.IntegerField(null=True, blank=True)
+
+    class Severity(models.TextChoices):
+        LOW = 'LOW', 'Low'
+        MEDIUM = 'MEDIUM', 'Medium'
+        HIGH = 'HIGH', 'High'
+        CRITICAL = 'CRITICAL', 'Critical'
+
+    severity = models.CharField(
+        max_length=10, choices=Severity.choices, default=Severity.MEDIUM
+    )
+
+    auto_block = models.BooleanField(default=False)
+    auto_notify = models.BooleanField(default=True)
+    notification_channels = models.JSONField(default=list, blank=True)
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'anomaly_detection_rules'
+        ordering = ['-severity', 'name']
+        verbose_name = 'Anomaly Detection Rule'
+        verbose_name_plural = 'Anomaly Detection Rules'
+
+    def __str__(self):
+        return f"[{self.severity}] {self.name}"
+
+
+class AnomalyAlert(models.Model):
+    """Alerts generated by anomaly detection rules."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        'tenants.Tenant', on_delete=models.CASCADE, null=True, blank=True
+    )
+
+    rule = models.ForeignKey(
+        AnomalyDetectionRule, on_delete=models.CASCADE,
+        related_name='alerts', null=True, blank=True
+    )
+
+    user_id = models.UUIDField(db_index=True)
+    user_type = models.CharField(max_length=10)
+
+    class AlertStatus(models.TextChoices):
+        NEW = 'NEW', 'New'
+        INVESTIGATING = 'INVESTIGATING', 'Investigating'
+        CONFIRMED = 'CONFIRMED', 'Confirmed Threat'
+        FALSE_POSITIVE = 'FALSE_POSITIVE', 'False Positive'
+        RESOLVED = 'RESOLVED', 'Resolved'
+
+    status = models.CharField(
+        max_length=20, choices=AlertStatus.choices, default=AlertStatus.NEW
+    )
+
+    class AlertSeverity(models.TextChoices):
+        LOW = 'LOW', 'Low'
+        MEDIUM = 'MEDIUM', 'Medium'
+        HIGH = 'HIGH', 'High'
+        CRITICAL = 'CRITICAL', 'Critical'
+
+    severity = models.CharField(
+        max_length=10, choices=AlertSeverity.choices, default=AlertSeverity.MEDIUM
+    )
+
+    title = models.CharField(max_length=300)
+    description = models.TextField(null=True, blank=True)
+    evidence = models.JSONField(default=dict, blank=True)
+
+    detected_at = models.DateTimeField(default=timezone.now, db_index=True)
+    acknowledged_at = models.DateTimeField(null=True, blank=True)
+    acknowledged_by = models.UUIDField(null=True, blank=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolved_by = models.UUIDField(null=True, blank=True)
+    resolution_notes = models.TextField(null=True, blank=True)
+
+    auto_action_taken = models.CharField(max_length=100, null=True, blank=True)
+
+    class Meta:
+        db_table = 'anomaly_alerts'
+        ordering = ['-detected_at']
+        verbose_name = 'Anomaly Alert'
+        verbose_name_plural = 'Anomaly Alerts'
+        indexes = [
+            models.Index(
+                fields=['status', 'severity', 'detected_at'],
+                name='idx_anomaly_status',
+            ),
+            models.Index(
+                fields=['user_id', 'detected_at'],
+                name='idx_anomaly_user',
+            ),
+        ]
+
+    def __str__(self):
+        return f"[{self.severity}] {self.title}"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMPLIANCE & DATA GOVERNANCE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class ComplianceRule(models.Model):
+    """Compliance rules and regulations tracking."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        'tenants.Tenant', on_delete=models.CASCADE, null=True, blank=True
+    )
+
+    code = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=200)
+    description = models.TextField(null=True, blank=True)
+
+    class RegulationType(models.TextChoices):
+        GDPR = 'GDPR', 'GDPR'
+        FERPA = 'FERPA', 'FERPA'
+        COPPA = 'COPPA', 'COPPA'
+        IT_ACT = 'IT_ACT', 'IT Act (India)'
+        DPDP = 'DPDP', 'DPDP Act (India)'
+        INTERNAL = 'INTERNAL', 'Internal Policy'
+        CUSTOM = 'CUSTOM', 'Custom'
+
+    regulation_type = models.CharField(
+        max_length=15, choices=RegulationType.choices
+    )
+
+    applicable_data_types = models.JSONField(default=list, blank=True)
+    applicable_user_types = models.JSONField(default=list, blank=True)
+
+    # Requirements
+    data_retention_days = models.IntegerField(null=True, blank=True)
+    requires_consent = models.BooleanField(default=False)
+    requires_encryption = models.BooleanField(default=False)
+    requires_anonymization = models.BooleanField(default=False)
+    requires_audit_trail = models.BooleanField(default=True)
+
+    # Enforcement
+    auto_enforce = models.BooleanField(default=False)
+    enforcement_action = models.CharField(max_length=50, null=True, blank=True)
+
+    is_active = models.BooleanField(default=True)
+    effective_from = models.DateField(null=True, blank=True)
+    effective_until = models.DateField(null=True, blank=True)
+
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'compliance_rules'
+        ordering = ['regulation_type', 'name']
+        verbose_name = 'Compliance Rule'
+        verbose_name_plural = 'Compliance Rules'
+
+    def __str__(self):
+        return f"[{self.regulation_type}] {self.name}"
+
+
+class ConsentRecord(models.Model):
+    """Tracks user consent for data processing activities."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey('tenants.Tenant', on_delete=models.CASCADE)
+
+    user_id = models.UUIDField(db_index=True)
+    user_type = models.CharField(max_length=10)
+
+    consent_type = models.CharField(
+        max_length=50,
+        help_text='e.g., data_processing, marketing, analytics'
+    )
+    consent_text = models.TextField()
+    version = models.CharField(max_length=20)
+
+    is_granted = models.BooleanField(default=False)
+    granted_at = models.DateTimeField(null=True, blank=True)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    collection_method = models.CharField(
+        max_length=50,
+        help_text='e.g., web_form, api, admin_override'
+    )
+
+    expires_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'consent_records'
+        ordering = ['-granted_at']
+        verbose_name = 'Consent Record'
+        verbose_name_plural = 'Consent Records'
+
+    def __str__(self):
+        status = 'Granted' if self.is_granted else 'Revoked'
+        return f"{self.consent_type} ({status}) — {self.user_type}:{str(self.user_id)[:8]}"
+
+
+class DataAccessRequest(models.Model):
+    """Data Subject Access Requests (DSAR) — GDPR/regulatory compliance."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey('tenants.Tenant', on_delete=models.CASCADE)
+
+    user_id = models.UUIDField(db_index=True)
+    user_type = models.CharField(max_length=10)
+    requester_email = models.EmailField()
+
+    class RequestType(models.TextChoices):
+        ACCESS = 'ACCESS', 'Data Access'
+        RECTIFICATION = 'RECTIFICATION', 'Data Rectification'
+        ERASURE = 'ERASURE', 'Data Erasure (Right to be Forgotten)'
+        PORTABILITY = 'PORTABILITY', 'Data Portability'
+        RESTRICTION = 'RESTRICTION', 'Restrict Processing'
+        OBJECTION = 'OBJECTION', 'Object to Processing'
+
+    request_type = models.CharField(
+        max_length=15, choices=RequestType.choices
+    )
+    description = models.TextField()
+    data_categories = models.JSONField(default=list, blank=True)
+
+    class RequestStatus(models.TextChoices):
+        RECEIVED = 'RECEIVED', 'Received'
+        IDENTITY_VERIFICATION = 'IDENTITY_VERIFICATION', 'Identity Verification'
+        IN_PROGRESS = 'IN_PROGRESS', 'In Progress'
+        COMPLETED = 'COMPLETED', 'Completed'
+        REJECTED = 'REJECTED', 'Rejected'
+        APPEALED = 'APPEALED', 'Appealed'
+
+    status = models.CharField(
+        max_length=25, choices=RequestStatus.choices,
+        default=RequestStatus.RECEIVED
+    )
+
+    requested_at = models.DateTimeField(default=timezone.now)
+    due_date = models.DateTimeField(
+        null=True, blank=True, help_text='Regulatory deadline'
+    )
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    assigned_to = models.UUIDField(null=True, blank=True)
+    response_notes = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'data_access_requests'
+        ordering = ['-requested_at']
+        verbose_name = 'Data Access Request'
+        verbose_name_plural = 'Data Access Requests'
+
+    def __str__(self):
+        return f"[{self.request_type}] {self.requester_email} ({self.status})"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PROXY MODELS — Audit models grouped under User Account section
+# ═══════════════════════════════════════════════════════════════════════════════
+
+from audit.models import (               # noqa: E402
+    AuditLog as _AuditLog,
+    AuditPurgePolicy as _AuditPurgePolicy,
+    BackupPolicy as _BackupPolicy,
+    BackupHistory as _BackupHistory,
+)
+
+
+class AuditEntry(_AuditLog):
+    """Proxy: Audit log entries — shown under User Account section."""
+    class Meta:
+        proxy = True
+        verbose_name = 'Audit Log Entry'
+        verbose_name_plural = 'Audit Log Entries'
+
+
+class RetentionPolicy(_AuditPurgePolicy):
+    """Proxy: Data retention policies — shown under User Account section."""
+    class Meta:
+        proxy = True
+        verbose_name = 'Data Retention Policy'
+        verbose_name_plural = 'Data Retention Policies'
+
+
+class BackupPolicyProxy(_BackupPolicy):
+    """Proxy: Backup policies — shown under User Account section."""
+    class Meta:
+        proxy = True
+        verbose_name = 'Backup Policy'
+        verbose_name_plural = 'Backup Policies'
+
+
+class BackupRecord(_BackupHistory):
+    """Proxy: Backup history — shown under User Account section."""
+    class Meta:
+        proxy = True
+        verbose_name = 'Backup Record'
+        verbose_name_plural = 'Backup Records'
