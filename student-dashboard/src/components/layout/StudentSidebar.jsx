@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Tv, CalendarDays, BookOpen, PlayCircle,
   ClipboardList, BarChart3, Bot, Trophy, HelpCircle,
   LogOut, ChevronLeft, ChevronRight, ChevronDown, Brain,
-  Calendar, Lightbulb, Sparkles, X, Home
+  Calendar, Lightbulb, Sparkles, X, Home, Compass
 } from 'lucide-react';
 
 const mainNav = [
@@ -23,6 +23,7 @@ const aiSubNav = [
   { to: '/ai-tools/planner', icon: Calendar, label: 'Study Planner' },
   { to: '/ai-tools/quiz', icon: Lightbulb, label: 'Practice Quiz' },
   { to: '/ai-tools/insights', icon: Sparkles, label: 'Performance Insights' },
+  { to: '/ai-tools/learning-path', icon: Compass, label: 'AI Learning Path', premium: true },
 ];
 
 const bottomNav = [
@@ -97,6 +98,9 @@ export default function StudentSidebar({ collapsed, setCollapsed, mobileOpen, se
                 <NavLink key={item.to} to={item.to} className={linkClass} onClick={() => setMobileOpen(false)}>
                   <item.icon className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate text-xs">{item.label}</span>
+                  {item.premium && (
+                    <span className="ml-auto px-1 py-0.5 bg-yellow-400/20 text-yellow-300 text-[8px] rounded font-bold">PRO</span>
+                  )}
                 </NavLink>
               ))}
             </div>

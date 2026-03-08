@@ -4,6 +4,7 @@ import DoubtSolver from './ai/DoubtSolver';
 import StudyPlanner from './ai/StudyPlanner';
 import AIQuiz from './ai/AIQuiz';
 import PerformanceInsights from './ai/PerformanceInsights';
+import LearningPath from './ai/LearningPath';
 
 export default function AITools() {
   return (
@@ -13,6 +14,7 @@ export default function AITools() {
       <Route path="planner" element={<StudyPlanner />} />
       <Route path="quiz" element={<AIQuiz />} />
       <Route path="insights" element={<PerformanceInsights />} />
+      <Route path="learning-path" element={<LearningPath />} />
     </Routes>
   );
 }
