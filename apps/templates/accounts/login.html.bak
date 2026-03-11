@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Login – ENF Online Class{% endblock %}
+{% block title %}Login – ENABLE PROGRAM{% endblock %}
 
 {% block body %}
 <div class="login-page">
@@ -19,7 +19,7 @@
     <div class="login-form-box">
       <a href="/" class="brand">
         <div class="logo-icon">E</div>
-        <span>ENF Online Class</span>
+        <span>ENABLE PROGRAM</span>
       </a>
 
       <h1>Welcome Back</h1>
