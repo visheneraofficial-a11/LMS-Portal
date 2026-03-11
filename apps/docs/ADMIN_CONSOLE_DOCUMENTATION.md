@@ -1,4 +1,4 @@
-# ENF Online Class — Admin Console v4.0 (Purple Edition)
+# ENABLE PROGRAM — Admin Console v4.0 (Purple Edition)
 
 ## Complete Documentation
 
@@ -51,7 +51,7 @@
 
 ### 1.1 What Is This?
 
-The **ENF Online Class Admin Console** is a fully customized Django Administration interface designed specifically for **coaching institutes, tuition centers, and online education platforms**. It transforms Django's default admin into a modern, branded, production-grade management console with:
+The **ENABLE PROGRAM Admin Console** is a fully customized Django Administration interface designed specifically for **coaching institutes, tuition centers, and online education platforms**. It transforms Django's default admin into a modern, branded, production-grade management console with:
 
 - Purple gradient design system with dark mode support
 - Client-side column filtering on every data table
@@ -133,7 +133,7 @@ A **three-way theme selector** (Light / Dark / System) built into the admin prof
 
 A **sticky gradient header bar** that remains pinned to the top of the screen while scrolling. It contains:
 
-- **Site branding** — "ENF Online Class — Admin Console" with a link to the dashboard
+- **Site branding** — "ENABLE PROGRAM — Admin Console" with a link to the dashboard
 - **Live clock** — Real-time date and time display (see [Section 17](#17-live-clock))
 - **Website link** — Quick jump to the public-facing website (`/`)
 - **Dashboard link** — Quick jump to the staff dashboard (`/staff/dashboard/`)
@@ -142,7 +142,7 @@ A **sticky gradient header bar** that remains pinned to the top of the screen wh
 ### 3.2 Example
 
 The header shows:  
-`[ENF Online Class — Admin Console]  [● Mon, 16 Feb 2026, 10:30:15 AM]  [🌐 Website]  [📊 Dashboard]  [👤 Admin ▾]`
+`[ENABLE PROGRAM — Admin Console]  [● Mon, 16 Feb 2026, 10:30:15 AM]  [🌐 Website]  [📊 Dashboard]  [👤 Admin ▾]`
 
 All elements remain visible even when scrolling long tables or forms.
 
@@ -737,7 +737,7 @@ Toast notifications appear automatically whenever Django sends a message (after 
 ### 16.1 What Is This?
 
 A **click-to-toggle dropdown menu** in the header showing:
-- User avatar and name (with role label "Super Admin · ENF Online Class")
+- User avatar and name (with role label "Super Admin · ENABLE PROGRAM")
 - **Theme selector** (Light / Dark / System)
 - **Account links:** View Site, Dashboard, My Profile
 - **Security links:** Change Password, Enable MFA, Manage Roles
@@ -2953,5 +2953,5 @@ Multi-tenancy enables the platform to serve multiple independent coaching instit
 
 ---
 
-*Documentation generated for ENF Online Class Admin Console v4.0 (Purple Edition)*  
+*Documentation generated for ENABLE PROGRAM Admin Console v4.0 (Purple Edition)*  
 *Last updated: February 16, 2026*

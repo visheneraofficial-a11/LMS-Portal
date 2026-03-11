@@ -1,5 +1,5 @@
 """
-ENF Online Class — Admin Utilities
+ENABLE PROGRAM — Admin Utilities
 Shared mixins, actions, and helpers for the enhanced admin console.
 """
 import csv

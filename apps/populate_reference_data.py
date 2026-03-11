@@ -548,7 +548,7 @@ print(f"\n  Total feature flags: {FeatureFlag.objects.count()}\n")
 # ════════════════════════════════════════════════════════════
 settings_data = [
     # General
-    {'setting_key': 'INSTITUTE_NAME',            'setting_value': 'ENF Online Class',                 'value_type': 'STRING',  'category': 'general',        'description': 'Display name of the institute'},
+    {'setting_key': 'INSTITUTE_NAME',            'setting_value': 'ENABLE PROGRAM',                 'value_type': 'STRING',  'category': 'general',        'description': 'Display name of the institute'},
     {'setting_key': 'INSTITUTE_CODE',            'setting_value': 'ENF',                              'value_type': 'STRING',  'category': 'general',        'description': 'Short code for the institute'},
     {'setting_key': 'SUPPORT_EMAIL',             'setting_value': 'support@lms.com',                  'value_type': 'STRING',  'category': 'general',        'description': 'Support email address'},
     {'setting_key': 'SUPPORT_PHONE',             'setting_value': '+91-9876543210',                   'value_type': 'STRING',  'category': 'general',        'description': 'Support phone number'},
@@ -586,7 +586,7 @@ settings_data = [
     # Branding
     {'setting_key': 'PRIMARY_COLOR',               'setting_value': '#844FC1',                        'value_type': 'STRING',  'category': 'branding',       'description': 'Primary brand color'},
     {'setting_key': 'SECONDARY_COLOR',             'setting_value': '#1E293B',                        'value_type': 'STRING',  'category': 'branding',       'description': 'Secondary brand color'},
-    {'setting_key': 'LOGIN_PAGE_BRAND_TEXT',        'setting_value': 'Welcome to ENF Online Class',   'value_type': 'STRING',  'category': 'branding',       'description': 'Text shown on login page'},
+    {'setting_key': 'LOGIN_PAGE_BRAND_TEXT',        'setting_value': 'Welcome to ENABLE PROGRAM',   'value_type': 'STRING',  'category': 'branding',       'description': 'Text shown on login page'},
 ]
 
 for sd in settings_data:

@@ -1,4 +1,4 @@
-# ENF Online Class — Admin Panel Hierarchy & Demo Guide
+# ENABLE PROGRAM — Admin Panel Hierarchy & Demo Guide
 
 **For Demo Presentation & Explanation**
 **Version:** 4.0 (Purple Edition)
@@ -646,7 +646,7 @@ Use this script when presenting the admin panel in a demo:
 
 ### Opening (Dashboard — 2 minutes)
 
-> "This is the ENF Online Class Admin Console. When you log in, the first thing you see is the **dashboard** with live statistics — total students, teachers, active batches, and today's attendance. These numbers update in real-time."
+> "This is the ENABLE PROGRAM Admin Console. When you log in, the first thing you see is the **dashboard** with live statistics — total students, teachers, active batches, and today's attendance. These numbers update in real-time."
 
 **Show:** Dashboard stat cards with animated counters.
 
@@ -959,5 +959,5 @@ Open this file in a browser to explore:
 
 ---
 
-*Document generated for ENF Online Class Admin Console v4.0 Demo*
+*Document generated for ENABLE PROGRAM Admin Console v4.0 Demo*
 *Last updated: February 16, 2026*

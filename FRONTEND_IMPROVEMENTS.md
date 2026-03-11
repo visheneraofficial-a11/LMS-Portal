@@ -1,7 +1,7 @@
 # Frontend Professional Enhancements - Version 2.0
 
 ## Overview
-The ENF Online Class frontend has been comprehensively upgraded with professional, modern design patterns and enhanced user experience.
+The ENABLE PROGRAM frontend has been comprehensively upgraded with professional, modern design patterns and enhanced user experience.
 
 ## Date of Update
 February 14, 2026

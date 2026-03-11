@@ -1,4 +1,4 @@
-# ENF Online Class - Frontend Upgrade Documentation
+# ENABLE PROGRAM - Frontend Upgrade Documentation
 
 ## 📚 Documentation Index
 

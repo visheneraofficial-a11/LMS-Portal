@@ -1,5 +1,5 @@
 # System Configuration Guide
-## ENF Online Class — Admin Console
+## ENABLE PROGRAM — Admin Console
 
 This guide provides comprehensive documentation for all features under **System Configuration** in the admin panel. Each section explains the purpose, use cases, real-time scenarios, and step-by-step configuration instructions.
 
@@ -687,7 +687,7 @@ Configure website footer sections including quick links, resources, contact info
        "instagram": "https://instagram.com/enf"
      }
      ```
-   - **Copyright Text**: e.g., "© 2026 ENF Online Class"
+   - **Copyright Text**: e.g., "© 2026 ENABLE PROGRAM"
    - **Sort Order**: Section order
    - **Is Active**: Enable section
 4. Click **Save**
@@ -862,4 +862,4 @@ OPEN → IN_PROGRESS → WAITING → RESOLVED → CLOSED
 ---
 
 *Last Updated: February 2026*
-*ENF Online Class Admin Console v4.0*
+*ENABLE PROGRAM Admin Console v4.0*

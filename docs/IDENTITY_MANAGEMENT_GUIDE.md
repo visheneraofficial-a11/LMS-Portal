@@ -1,5 +1,5 @@
 # Identity Management Guide
-## ENF Online Class — Admin Console
+## ENABLE PROGRAM — Admin Console
 
 This guide explains the Identity Management features in simple terms with real-world examples and step-by-step instructions.
 

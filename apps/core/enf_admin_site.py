@@ -1,5 +1,5 @@
 """
-ENF Online Class - Custom Admin Site Configuration
+ENABLE PROGRAM - Custom Admin Site Configuration
 Monkey-patches the default admin site to add dashboard stats.
 """
 from django.contrib import admin
@@ -218,7 +218,7 @@ original_index = admin.AdminSite.index
 admin.AdminSite.index = custom_admin_index
 
 # Customize branding
-admin.site.site_header = 'ENF Online Class — Admin Console'
+admin.site.site_header = 'ENABLE PROGRAM — Admin Console'
 admin.site.site_title = 'ENF Admin'
 admin.site.index_title = 'Administration Dashboard'
 admin.site.site_url = '/'

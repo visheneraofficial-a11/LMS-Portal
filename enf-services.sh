@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════════════════════
-#  ENF Online Class — Service Manager
+#  ENABLE PROGRAM — Service Manager
 #  Manages: PostgreSQL, Gunicorn (Django), Cloudflare Tunnel
 # ═══════════════════════════════════════════════════════════════════════════
 #
@@ -28,7 +28,7 @@
 set -euo pipefail
 
 # ─── Configuration ────────────────────────────────────────────────────────
-APP_NAME="ENF Online Class"
+APP_NAME="ENABLE PROGRAM"
 BASE_DIR="/u01/app/django"
 APP_DIR="${BASE_DIR}/apps"
 VENV_DIR="${BASE_DIR}/venv"

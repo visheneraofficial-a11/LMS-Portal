@@ -380,7 +380,7 @@ font-size: clamp(1.5rem, 4vw, 2.5rem);
 
 ## 🚀 Result
 
-Your ENF Online Class frontend has been transformed from a functional design
+Your ENABLE PROGRAM frontend has been transformed from a functional design
 to a **professional, modern platform** that competes with leading EdTech companies.
 
 **Status**: ✅ Production Ready
