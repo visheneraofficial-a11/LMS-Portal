@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Send, Bot, User, Image, Paperclip, Sparkles, Copy, ThumbsUp, ThumbsDown, Loader2, BookOpen, Eraser } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, Bot, User, Image, Paperclip, Sparkles, Copy, ThumbsUp, ThumbsDown, Loader2, BookOpen, Eraser, Mic, MicOff, Volume2, VolumeX, Square } from 'lucide-react';
 import { aiDoubtHistory, subjects } from '../../data/mockData';
 
 const suggestedQuestions = [
@@ -20,6 +20,201 @@ export default function DoubtSolver() {
   const [loading, setLoading] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState('All');
   const chatRef = useRef(null);
+
+  // Voice chat state
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speakingMsgIndex, setSpeakingMsgIndex] = useState(null);
+  const [voiceLevel, setVoiceLevel] = useState(0);
+  const [transcript, setTranscript] = useState('');
+  const recognitionRef = useRef(null);
+  const synthRef = useRef(window.speechSynthesis);
+  const analyserRef = useRef(null);
+  const animFrameRef = useRef(null);
+  const mediaStreamRef = useRef(null);
+
+  // Check browser support
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const hasSpeechRecognition = !!SpeechRecognition;
+  const hasSpeechSynthesis = !!window.speechSynthesis;
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (!hasSpeechRecognition) return;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-IN';
+
+    recognition.onresult = (event) => {
+      let interim = '';
+      let final = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const t = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          final += t;
+        } else {
+          interim += t;
+        }
+      }
+      if (final) {
+        setInput(prev => (prev + ' ' + final).trim());
+        setTranscript('');
+      } else {
+        setTranscript(interim);
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      if (event.error !== 'aborted') {
+        stopListening();
+      }
+    };
+
+    recognition.onend = () => {
+      // Auto-restart if still in listening mode
+      if (recognitionRef.current?._shouldListen) {
+        try { recognitionRef.current.start(); } catch(e) {}
+      }
+    };
+
+    recognitionRef.current = recognition;
+    return () => {
+      recognition.abort();
+      stopAudioAnalyser();
+    };
+  }, []);
+
+  // Audio analyser for voice level visualization
+  const startAudioAnalyser = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const source = audioCtx.createMediaStreamSource(stream);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+      analyserRef.current = { analyser, audioCtx };
+
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      const updateLevel = () => {
+        analyser.getByteFrequencyData(dataArray);
+        const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
+        setVoiceLevel(Math.min(avg / 128, 1));
+        animFrameRef.current = requestAnimationFrame(updateLevel);
+      };
+      updateLevel();
+    } catch (err) {
+      console.error('Microphone access error:', err);
+    }
+  }, []);
+
+  const stopAudioAnalyser = useCallback(() => {
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    if (analyserRef.current?.audioCtx) analyserRef.current.audioCtx.close();
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      mediaStreamRef.current = null;
+    }
+    analyserRef.current = null;
+    setVoiceLevel(0);
+  }, []);
+
+  const startListening = useCallback(() => {
+    if (!recognitionRef.current) return;
+    recognitionRef.current._shouldListen = true;
+    try {
+      recognitionRef.current.start();
+      setIsListening(true);
+      setTranscript('');
+      startAudioAnalyser();
+    } catch (e) {
+      console.error('Failed to start recognition:', e);
+    }
+  }, [startAudioAnalyser]);
+
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current._shouldListen = false;
+      recognitionRef.current.stop();
+    }
+    setIsListening(false);
+    setTranscript('');
+    stopAudioAnalyser();
+  }, [stopAudioAnalyser]);
+
+  const toggleListening = useCallback(() => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  }, [isListening, startListening, stopListening]);
+
+  // Text-to-Speech
+  const speakText = useCallback((text, msgIndex) => {
+    if (!hasSpeechSynthesis) return;
+
+    // If already speaking this message, stop
+    if (isSpeaking && speakingMsgIndex === msgIndex) {
+      synthRef.current.cancel();
+      setIsSpeaking(false);
+      setSpeakingMsgIndex(null);
+      return;
+    }
+
+    // Stop any current speech
+    synthRef.current.cancel();
+
+    // Clean markdown/formatting from text
+    const cleanText = text
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      .replace(/>\s*(.*)/g, '$1')
+      .replace(/#{1,6}\s/g, '')
+      .replace(/\|.*\|/g, '')
+      .replace(/[-]{2,}/g, '')
+      .replace(/[`]/g, '')
+      .replace(/\n{2,}/g, '. ')
+      .replace(/\n/g, '. ')
+      .replace(/[₁₂₃₄₅₆₇₈₉₀]/g, '');
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = 'en-IN';
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+
+    // Try to use a good voice
+    const voices = synthRef.current.getVoices();
+    const preferred = voices.find(v => v.lang.includes('en') && v.name.includes('Google')) ||
+                      voices.find(v => v.lang.includes('en-IN')) ||
+                      voices.find(v => v.lang.includes('en'));
+    if (preferred) utterance.voice = preferred;
+
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      setSpeakingMsgIndex(msgIndex);
+    };
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setSpeakingMsgIndex(null);
+    };
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      setSpeakingMsgIndex(null);
+    };
+
+    synthRef.current.speak(utterance);
+  }, [isSpeaking, speakingMsgIndex, hasSpeechSynthesis]);
+
+  // Cleanup speech synthesis on unmount
+  useEffect(() => {
+    return () => {
+      synthRef.current?.cancel();
+    };
+  }, []);
 
   useEffect(() => {
     chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: 'smooth' });
@@ -108,6 +303,24 @@ export default function DoubtSolver() {
                   {msg.role === 'assistant' && i > 0 && (
                     <div className="flex items-center gap-1">
                       <button className="p-1 rounded hover:bg-slate-100"><Copy className="w-3 h-3 text-slate-400" /></button>
+                      <button onClick={() => speakText(msg.content, i)}
+                        className={`p-1 rounded hover:bg-slate-100 transition-colors ${isSpeaking && speakingMsgIndex === i ? 'bg-primary-50' : ''}`}
+                        title={isSpeaking && speakingMsgIndex === i ? 'Stop reading' : 'Read aloud'}>
+                        {isSpeaking && speakingMsgIndex === i ? (
+                          <span className="flex items-center gap-0.5">
+                            <VolumeX className="w-3 h-3 text-primary-600" />
+                            <span className="flex gap-[2px] items-end h-3">
+                              {[0,1,2,3].map(j => (
+                                <motion.span key={j} className="w-[2px] bg-primary-500 rounded-full"
+                                  animate={{ height: ['4px','10px','4px'] }}
+                                  transition={{ duration: 0.5, repeat: Infinity, delay: j*0.1 }} />
+                              ))}
+                            </span>
+                          </span>
+                        ) : (
+                          <Volume2 className="w-3 h-3 text-slate-400" />
+                        )}
+                      </button>
                       <button className="p-1 rounded hover:bg-slate-100"><ThumbsUp className="w-3 h-3 text-slate-400" /></button>
                       <button className="p-1 rounded hover:bg-slate-100"><ThumbsDown className="w-3 h-3 text-slate-400" /></button>
                     </div>
@@ -146,26 +359,95 @@ export default function DoubtSolver() {
 
         {/* Input */}
         <div className="px-4 py-3 border-t border-slate-100 bg-white">
+          {/* Voice Recording Overlay */}
+          <AnimatePresence>
+            {isListening && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="mb-3 p-4 bg-gradient-to-r from-primary-50 via-violet-50 to-primary-50 rounded-xl border border-primary-200"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                    </span>
+                    <span className="text-xs font-medium text-primary-700">Listening...</span>
+                  </div>
+                  <button onClick={stopListening}
+                    className="text-xs text-slate-500 hover:text-red-500 transition-colors flex items-center gap-1">
+                    <Square className="w-3 h-3" /> Stop
+                  </button>
+                </div>
+
+                {/* Voice waveform visualization */}
+                <div className="flex items-center justify-center gap-[3px] h-10 mb-2">
+                  {Array.from({ length: 20 }).map((_, i) => {
+                    const dist = Math.abs(i - 10) / 10;
+                    const h = Math.max(4, voiceLevel * 40 * (1 - dist * 0.5) + Math.sin(Date.now() / 200 + i) * 3);
+                    return (
+                      <motion.div
+                        key={i}
+                        className="w-[3px] rounded-full bg-gradient-to-t from-primary-500 to-violet-400"
+                        animate={{ height: `${h}px` }}
+                        transition={{ duration: 0.1 }}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* Live transcript */}
+                {(transcript || input) && (
+                  <div className="text-xs text-slate-600 bg-white/70 rounded-lg px-3 py-2 backdrop-blur-sm">
+                    <span className="text-slate-800">{input}</span>
+                    {transcript && <span className="text-slate-400 italic"> {transcript}</span>}
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <div className="flex items-end gap-2">
+            {/* Mic Button */}
+            {hasSpeechRecognition && (
+              <button
+                onClick={toggleListening}
+                className={`p-2.5 rounded-xl transition-all duration-200 ${
+                  isListening
+                    ? 'bg-red-500 text-white shadow-lg shadow-red-200 scale-110'
+                    : 'bg-slate-100 text-slate-500 hover:bg-primary-100 hover:text-primary-600'
+                }`}
+                title={isListening ? 'Stop voice input' : 'Voice input'}
+              >
+                {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              </button>
+            )}
             <div className="flex-1 relative">
               <textarea
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
-                placeholder="Ask your doubt..."
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); if (isListening) stopListening(); } }}
+                placeholder={isListening ? 'Speak your doubt...' : 'Ask your doubt...'}
                 rows={1}
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+                className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none transition-colors ${
+                  isListening ? 'border-primary-300 bg-primary-50/30' : 'border-slate-200'
+                }`}
                 style={{ minHeight: '40px', maxHeight: '120px' }}
               />
             </div>
             <button
-              onClick={() => sendMessage(input)}
+              onClick={() => { sendMessage(input); if (isListening) stopListening(); }}
               disabled={!input.trim() || loading}
               className="p-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <Send className="w-5 h-5" />
             </button>
           </div>
+          {!hasSpeechRecognition && (
+            <p className="text-[10px] text-slate-400 mt-1 text-center">Voice input is not supported in this browser. Use Chrome for voice features.</p>
+          )}
         </div>
       </div>
     </div>
