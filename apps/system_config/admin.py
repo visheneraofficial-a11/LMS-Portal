@@ -7,6 +7,13 @@ from system_config.models import (
     IntegrationConfig, WebsiteSetting, ReportTemplate,
     WebsiteNews, Testimonial, FooterConfig,
 )
+from system_config.forms import (
+    SystemSettingForm, FeatureFlagForm, MFAPolicyForm,
+    MaintenanceWindowForm, FounderInfoForm,
+    AIFeatureConfigForm, ClassLinkConfigForm,
+    IntegrationConfigForm, WebsiteSettingForm,
+    ReportTemplateForm, FooterConfigForm,
+)
 from communication.models import (
     Announcement, DirectMessage, Notification, SupportTicket, TicketMessage,
 )
@@ -21,6 +28,7 @@ from core.admin_utils import (
 # ═══════════════════════════════════════════════════════════════════
 @admin.register(SystemSetting)
 class SystemSettingAdmin(EnhancedModelAdmin):
+    form = SystemSettingForm
     list_display = ('setting_key', 'value_type_badge', 'category_badge', 'secret_badge', 'editable_badge')
     list_filter = ('value_type', 'category', 'is_secret')
     search_fields = ('setting_key',)
@@ -56,6 +64,7 @@ class SystemSettingAdmin(EnhancedModelAdmin):
 # ═══════════════════════════════════════════════════════════════════
 @admin.register(FeatureFlag)
 class FeatureFlagAdmin(EnhancedModelAdmin):
+    form = FeatureFlagForm
     list_display = ('flag_key', 'flag_name', 'enabled_badge', 'rollout_display')
     list_filter = ('is_enabled',)
     search_fields = ('flag_key', 'flag_name')
@@ -85,6 +94,7 @@ class FeatureFlagAdmin(EnhancedModelAdmin):
 # ═══════════════════════════════════════════════════════════════════
 @admin.register(MFAPolicy)
 class MFAPolicyAdmin(EnhancedModelAdmin):
+    form = MFAPolicyForm
     list_display = ('mfa_type', 'mandatory_badge', 'otp_length', 'otp_expiry_seconds', 'active_badge')
     list_filter = ('is_active', 'is_mandatory')
     actions = [export_as_csv]
@@ -105,6 +115,7 @@ class MFAPolicyAdmin(EnhancedModelAdmin):
 # ═══════════════════════════════════════════════════════════════════
 @admin.register(MaintenanceWindow)
 class MaintenanceWindowAdmin(EnhancedModelAdmin):
+    form = MaintenanceWindowForm
     list_display = ('title', 'scope', 'start_time', 'end_time', 'active_badge')
     list_filter = ('is_active', 'scope')
     actions = [export_as_csv]
@@ -121,6 +132,7 @@ class MaintenanceWindowAdmin(EnhancedModelAdmin):
 # ═══════════════════════════════════════════════════════════════════
 @admin.register(FounderInfo)
 class FounderInfoAdmin(ImportExportMixin, EnhancedModelAdmin):
+    form = FounderInfoForm
     list_display = ('name', 'member_type', 'designation', 'active_badge', 'photo_preview')
     list_filter = ('is_active', 'member_type')
     actions = [export_as_csv, export_as_json, activate_selected, deactivate_selected]
@@ -164,6 +176,7 @@ class EnquiryFormAdmin(ImportExportMixin, EnhancedModelAdmin):
 # ═══════════════════════════════════════════════════════════════════
 @admin.register(AIFeatureConfig)
 class AIFeatureConfigAdmin(ImportExportMixin, EnhancedModelAdmin):
+    form = AIFeatureConfigForm
     list_display = (
         'feature_icon', 'feature_name', 'category_badge', 'scope_badge',
         'enabled_toggle_badge', 'provider_badge', 'rate_info', 'updated_display',
@@ -285,6 +298,7 @@ class AIFeatureConfigAdmin(ImportExportMixin, EnhancedModelAdmin):
 # ═══════════════════════════════════════════════════════════════════
 @admin.register(ClassLinkConfig)
 class ClassLinkConfigAdmin(EnhancedModelAdmin):
+    form = ClassLinkConfigForm
     list_display = (
         'platform_badge', 'tenant', 'active_badge', 'default_badge',
         'auto_gen_badge', 'gen_before', 'duration_display', 'updated_display',
@@ -428,6 +442,7 @@ class AttendanceRuleAdmin(EnhancedModelAdmin):
 # ─── Integration Config ──────────────────────────────────────────────
 @admin.register(IntegrationConfig)
 class IntegrationConfigAdmin(EnhancedModelAdmin):
+    form = IntegrationConfigForm
     list_display = ('name', 'type_badge', 'provider', 'health_badge', 'enabled_badge', 'rate_info', 'updated_at')
     list_filter = ('integration_type', 'health_status', 'is_active')
     search_fields = ('name', 'provider', 'integration_type')
@@ -486,6 +501,7 @@ class IntegrationConfigAdmin(EnhancedModelAdmin):
 # ─── Website Setting ─────────────────────────────────────────────────
 @admin.register(WebsiteSetting)
 class WebsiteSettingAdmin(EnhancedModelAdmin):
+    form = WebsiteSettingForm
     list_display = ('setting_key', 'section_badge', 'value_preview', 'active_badge_ws', 'sort_order', 'updated_at')
     list_filter = ('section', 'is_active')
     search_fields = ('setting_key', 'setting_value', 'section')
@@ -530,6 +546,7 @@ class WebsiteSettingAdmin(EnhancedModelAdmin):
 # ─── Report Template ──────────────────────────────────────────────────
 @admin.register(ReportTemplate)
 class ReportTemplateAdmin(EnhancedModelAdmin):
+    form = ReportTemplateForm
     list_display = ('name', 'type_badge_rpt', 'format_badge', 'schedule_badge', 'active_badge_rpt', 'created_by', 'updated_at')
     list_filter = ('report_type', 'default_format', 'is_scheduled', 'is_active')
     search_fields = ('name', 'description', 'report_type')
@@ -649,6 +666,7 @@ class TestimonialAdmin(EnhancedModelAdmin):
 # ═══════════════════════════════════════════════════════════════════
 @admin.register(FooterConfig)
 class FooterConfigAdmin(EnhancedModelAdmin):
+    form = FooterConfigForm
     list_display = ('section_title', 'section_badge', 'sort_order', 'active_badge_fc')
     list_filter = ('section', 'is_active')
     search_fields = ('section_title',)

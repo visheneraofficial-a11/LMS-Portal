@@ -67,7 +67,7 @@ LOCAL_APPS = [
     'core',
 ]
 
-INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS + ['django.forms']
 
 # ---------------------------------------------------------------------------
 # Authentication Backends (allow admin login with username OR email)
@@ -94,6 +94,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'lms_enterprise.urls'
+
+FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 TEMPLATES = [
     {
