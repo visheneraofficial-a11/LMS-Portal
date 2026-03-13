@@ -14,6 +14,7 @@ from system_config.models import (
 from system_config.widgets import (
     TagListWidget, EmailListWidget, KeyValueWidget,
     SocialLinksWidget, LinksListWidget, FiltersWidget,
+    SchedulePickerWidget,
 )
 
 USER_TYPE_CHOICES = ['ADMIN', 'TEACHER', 'STUDENT', 'PARENT', 'STAFF']
@@ -195,6 +196,14 @@ class WebsiteSettingForm(forms.ModelForm):
 # REPORT TEMPLATE — the key one from the screenshot
 # ═══════════════════════════════════════════════════════════════════
 class ReportTemplateForm(forms.ModelForm):
+    # Override created_by with a dropdown of admin/teacher users
+    created_by_user = forms.ChoiceField(
+        choices=[],
+        required=False,
+        label='Created By',
+        help_text='Select who is creating this report template',
+    )
+
     class Meta:
         model = ReportTemplate
         fields = '__all__'
@@ -213,7 +222,54 @@ class ReportTemplateForm(forms.ModelForm):
                 suggestions=REPORT_SORT_CHOICES,
             ),
             'recipients_email': EmailListWidget(),
+            'schedule_cron': SchedulePickerWidget(),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Build created_by choices from Admin and Teacher models
+        choices = [('', '— Select User —')]
+        try:
+            from accounts.models import Admin, Teacher
+            admins = Admin.objects.filter(status='ACTIVE').order_by('first_name')[:50]
+            if admins.exists():
+                admin_choices = []
+                for a in admins:
+                    display = f"{a.first_name} {a.last_name}".strip() or a.username or str(a.id)[:8]
+                    admin_choices.append((str(a.id), f"{display} (Admin)"))
+                choices.append(('Admins', admin_choices))
+            teachers = Teacher.objects.filter(status='ACTIVE').order_by('first_name')[:50]
+            if teachers.exists():
+                teacher_choices = []
+                for t in teachers:
+                    display = f"{t.first_name} {t.last_name}".strip() or t.username or str(t.id)[:8]
+                    teacher_choices.append((str(t.id), f"{display} (Teacher)"))
+                choices.append(('Teachers', teacher_choices))
+        except Exception:
+            pass
+        self.fields['created_by_user'].choices = choices
+
+        # Pre-select current value
+        if self.instance and self.instance.created_by:
+            self.fields['created_by_user'].initial = str(self.instance.created_by)
+
+        # Hide the original created_by UUID field
+        if 'created_by' in self.fields:
+            self.fields['created_by'].widget = forms.HiddenInput()
+
+    def clean(self):
+        cleaned = super().clean()
+        # Map created_by_user dropdown value → UUID field
+        user_val = cleaned.get('created_by_user')
+        if user_val:
+            import uuid
+            try:
+                cleaned['created_by'] = uuid.UUID(user_val)
+            except (ValueError, TypeError):
+                cleaned['created_by'] = None
+        else:
+            cleaned['created_by'] = None
+        return cleaned
 
 
 # ═══════════════════════════════════════════════════════════════════

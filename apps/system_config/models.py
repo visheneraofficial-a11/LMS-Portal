@@ -597,7 +597,11 @@ class ReportTemplate(models.Model):
     report_type = models.CharField(max_length=15, choices=ReportType.choices)
 
     # Filter configuration (saved as JSON)
-    filters_json = models.JSONField(default=dict, blank=True, help_text='Saved filter conditions')
+    filters_json = models.JSONField(
+        default=dict, blank=True,
+        verbose_name='Report Filters',
+        help_text='Filter conditions for the report — like Excel column filters',
+    )
     columns_json = models.JSONField(default=list, blank=True, help_text='Selected columns for export')
     group_by = models.JSONField(default=list, blank=True, help_text='Group by fields')
     sort_by = models.JSONField(default=list, blank=True, help_text='Sort fields')
@@ -610,7 +614,11 @@ class ReportTemplate(models.Model):
 
     default_format = models.CharField(max_length=5, choices=ExportFormat.choices, default=ExportFormat.EXCEL)
     is_scheduled = models.BooleanField(default=False)
-    schedule_cron = models.CharField(max_length=100, null=True, blank=True)
+    schedule_cron = models.CharField(
+        max_length=100, null=True, blank=True,
+        verbose_name='Recurring Schedule',
+        help_text='How often this report should be auto-generated',
+    )
     recipients_email = models.JSONField(default=list, blank=True)
 
     is_active = models.BooleanField(default=True)

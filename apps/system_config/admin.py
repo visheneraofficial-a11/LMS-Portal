@@ -547,7 +547,7 @@ class WebsiteSettingAdmin(EnhancedModelAdmin):
 @admin.register(ReportTemplate)
 class ReportTemplateAdmin(EnhancedModelAdmin):
     form = ReportTemplateForm
-    list_display = ('name', 'type_badge_rpt', 'format_badge', 'schedule_badge', 'active_badge_rpt', 'created_by', 'updated_at')
+    list_display = ('name', 'type_badge_rpt', 'format_badge', 'schedule_badge', 'active_badge_rpt', 'created_by_display', 'updated_at')
     list_filter = ('report_type', 'default_format', 'is_scheduled', 'is_active')
     search_fields = ('name', 'description', 'report_type')
     readonly_fields = ('created_at', 'updated_at')
@@ -556,17 +556,42 @@ class ReportTemplateAdmin(EnhancedModelAdmin):
             'fields': ('name', 'description', 'report_type', 'is_active')
         }),
         ('Configuration', {
-            'fields': ('filters_json', 'columns_json', 'group_by', 'sort_by', 'default_format')
+            'fields': ('filters_json', 'columns_json', 'group_by', 'sort_by', 'default_format'),
+            'description': 'Set up report filters (like Excel filters), select columns to include, and choose grouping/sorting.',
         }),
         ('Scheduling', {
             'fields': ('is_scheduled', 'schedule_cron', 'recipients_email'),
             'classes': ('collapse',),
+            'description': 'Enable scheduling to automatically generate and email this report on a recurring basis.',
         }),
         ('Meta', {
-            'fields': ('created_by', 'created_at', 'updated_at'),
+            'fields': ('created_by_user', 'created_by', 'created_at', 'updated_at'),
             'classes': ('collapse',),
         }),
     )
+
+    def created_by_display(self, obj):
+        if not obj.created_by:
+            return format_html('<span style="color:#94a3b8;">—</span>')
+        # Try to resolve the UUID to a name
+        try:
+            from accounts.models import Admin as AdminModel, Teacher
+            try:
+                admin_user = AdminModel.objects.get(id=obj.created_by)
+                name = f"{admin_user.first_name} {admin_user.last_name}".strip() or str(obj.created_by)[:8]
+                return format_html('<span style="color:#2563eb;font-weight:500;">{}</span>', name)
+            except AdminModel.DoesNotExist:
+                pass
+            try:
+                teacher = Teacher.objects.get(id=obj.created_by)
+                name = f"{teacher.first_name} {teacher.last_name}".strip() or str(obj.created_by)[:8]
+                return format_html('<span style="color:#8b5cf6;font-weight:500;">{}</span>', name)
+            except Teacher.DoesNotExist:
+                pass
+        except Exception:
+            pass
+        return format_html('<span style="color:#64748b;">{}</span>', str(obj.created_by)[:8])
+    created_by_display.short_description = 'Created By'
 
     def type_badge_rpt(self, obj):
         colors = {
